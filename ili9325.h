@@ -22,6 +22,9 @@
 
 #include <libopencm3/stm32/f1/gpio.h>
 #include "font_7seg.h"
+#include "font6x12.h"
+#include "font8x16.h"
+#include "font8x16b.h"
 
 //---- Definitions -----------------------------------------------------------//
 
@@ -52,7 +55,23 @@
 
 //---- Variables -------------------------------------------------------------//
 
+//Store rotation information for ili9325GoTo. Set this from ili9325Orientation
 uint8_t _ili9325Rotation = 0; //Don't set it by hand, use ili9325_orientation()
+
+//Store font settings. Set these from ili9325SetFont()
+const uint8_t (*_ili9325FontWidth) = &font6x12Width;
+const uint8_t (*_ili9325FontHeight) = &font6x12Height;
+const uint8_t (*_ili9325FontSpace) = &font6x12Space;
+const uint8_t (*_ili9325FontData)[] = &font6x12Data;
+
+//Store colors for certaing functions. Set these from ili9325SetColor();
+uint16_t _ili9325ColorFront = C16_WHITE;
+uint16_t _ili9325ColorBack = C16_BLACK;
+uint16_t _ili9325ColorFill = C16_GRAY;
+
+//Location for next charecter
+uint16_t _ili9325LocationX = 0;
+uint16_t _ili9325LocationY = 0;
 
 //---- Function prototypes ---------------------------------------------------//
 
@@ -67,9 +86,13 @@ void		ili9325GoTo(uint16_t x, uint16_t y);
 void		ili9325Clear(uint16_t color);
 void		ili9325Point(uint16_t color);
 void		ili9325Orientation(uint8_t rot);
-void		ili9325PrintDigit(uint8_t digit, uint16_t x, uint16_t y, uint16_t \
-			colorFront, uint16_t colorBack, uint16_t colorShadow);
-//void		ili9325Image(const uint16_t *width, const uint16_t *height, const uint16_t *colors, const uint8_t *data, uint16_t destX, uint16_t destY);
+void		ili9325PrintDigit(uint8_t digit, uint16_t x, uint16_t y);
+void		ili9325PrintChar(char character);
+void		ili9325PrintString(char chars[]);
+void		ili9325SetFont(uint8_t font);
+void		ili9325SetLocation(uint16_t x, uint16_t y);
+void		ili9325SetColor(uint16_t front, uint16_t back, uint16_t fill);
+void		ili9325Image(const uint16_t (*width), const uint16_t (*height), const uint16_t (*colors)[], const uint8_t (*data)[], uint16_t destX, uint16_t destY);
 
 //---- Include source --------------------------------------------------------//
 

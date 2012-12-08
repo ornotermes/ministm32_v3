@@ -1,3 +1,4 @@
+// Visit http://www.gnu.org/graphics/license-logos.html for more info.
 // img2h - Convert image to header with a colormap in 16 bit RRRRRGGGGGGBBBBB
 // Command: ./img2h.py -c 4 -f gpl.png -n gpl
 static const uint16_t gpl_width = 127;

@@ -195,7 +195,7 @@ void ili9325Dot(uint16_t color)
 }
 
 //Print a single 7seg digit
-void ili9325PrintDigit(uint8_t digit, uint16_t x, uint16_t y, uint16_t colorFront, uint16_t colorBack, uint16_t colorShadow)
+void ili9325PrintDigit(uint8_t digit, uint16_t x, uint16_t y)
 {
 	uint16_t color = 0;
 	for(uint8_t ty = 0; ty < 24; ty++)
@@ -205,12 +205,89 @@ void ili9325PrintDigit(uint8_t digit, uint16_t x, uint16_t y, uint16_t colorFron
 		ili9325WriteCommand(0x0022);
 		for(uint8_t tx = 0; tx < 17; tx++)
 		{
-			if((font_7seg[(digit*24)+ty]&(1<<(16-tx))) > 0) color = colorFront;
-			else if((font_7seg[(8*24)+ty]&(1<<(16-tx))) > 0) color = colorShadow;
-			else color = colorBack;
+			if((font_7seg[(digit*24)+ty]&(1<<(16-tx))) > 0) color = _ili9325ColorFront;
+			else if((font_7seg[(8*24)+ty]&(1<<(16-tx))) > 0) color = _ili9325ColorFill;
+			else color = _ili9325ColorBack;
 			ili9325WriteData(color);
 		}
 		ili9325CS(1);
+	}
+}
+
+//Select wich font to use. 
+void ili9325SetFont(uint8_t font)
+{
+	switch (font)
+	{
+	case 6: //6px normal
+		_ili9325FontWidth = &font6x12Width;
+		_ili9325FontHeight = &font6x12Height;
+		_ili9325FontData = &font6x12Data;
+		break;
+	case 8: //8px normal
+		_ili9325FontWidth = &font8x16Width;
+		_ili9325FontHeight = &font8x16Height;
+		_ili9325FontData = &font8x16Data;
+		break;
+	case 9: //8px bold
+		_ili9325FontWidth = &font8x16bWidth;
+		_ili9325FontHeight = &font8x16bHeight;
+		_ili9325FontData = &font8x16bData;
+		break;	
+	}
+}
+
+//Set text location
+void ili9325SetLocation(uint16_t x, uint16_t y)
+{
+	_ili9325LocationX = x;
+	_ili9325LocationY = y;
+}
+
+//Set colors to use
+void ili9325SetColor(uint16_t front, uint16_t back, uint16_t fill)
+{
+	_ili9325ColorFront = front;
+	_ili9325ColorBack = back;
+	_ili9325ColorFill = fill;
+}
+
+//Print a single char
+void ili9325PrintChar(char character)
+{
+	uint16_t color = 0;
+	switch(character)
+	{
+	case 13: //CR
+		_ili9325LocationY += (*_ili9325FontHeight);
+		break;
+		
+	default:
+		character -= 32;
+		for	(uint16_t y = 0; y < (*_ili9325FontHeight); y++)
+		{
+			ili9325GoTo(_ili9325LocationX, _ili9325LocationY+y);
+			ili9325CS(0);
+			ili9325WriteCommand(0x0022);
+			uint8_t charByte = (*_ili9325FontData)[(character)*(*_ili9325FontHeight)+y];
+			for (uint16_t x = 0; x < (*_ili9325FontWidth); x++)
+			{
+				if ( ( charByte & ( 1<<(8-x) ) ) > 0) color = _ili9325ColorFront;
+				else color = _ili9325ColorBack;
+				ili9325WriteData(color);
+			}
+			ili9325CS(1);
+		}
+		_ili9325LocationX += (*_ili9325FontWidth) + (*_ili9325FontSpace);
+		break;
+	}
+}
+
+void ili9325PrintString(char chars[])
+{
+	for(uint8_t c = 0; chars[c] != 0; c++)
+	{
+		ili9325PrintChar(chars[c]);
 	}
 }
 
