@@ -1,19 +1,18 @@
 /*
- * Copyright (C) 2009 Uwe Hermann <uwe@hermann-uwe.de>
- * Copyright (C) 2012 Rikard Lindström <ornotermes@gmail.com>
+ * Copyright (C) 2012-2013 Rikard Lindström <ornotermes@gmail.com>
  *
- * This library is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <libopencm3/stm32/f1/rcc.h>
@@ -23,8 +22,9 @@
 #include "rainbow.h"
 
 /* Set STM32 to 72 MHz. */
-void clock_setup(void)
+void setup(void)
 {
+	/* Select main clock */
 	rcc_clock_setup_in_hse_8mhz_out_72mhz();
 
 	/* Enable GPIOA, GPIOB and GPIOC clock. */
@@ -33,16 +33,9 @@ void clock_setup(void)
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPCEN);
 }
 
-void gpio_setup(void)
-{
-	/* Set GPIO12 (in GPIO port C) to 'output push-pull'. */
-	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO2);
-}
-
 int main(void)
 {
-	clock_setup();
-	gpio_setup();
+	setup();
 	
 	ili9325Init();
 	ili9325Orientation(1);
@@ -84,12 +77,7 @@ int main(void)
 	//GPL v3 symbol
 	ili9325Image(&gpl_width, &gpl_height, &gpl_colors, &gpl_data, 96, 180);
 	
-	/* Blink the LED (PC12) on the board. */
-	while (1) {
-		gpio_toggle(GPIOA, GPIO2);	/* LED on/off */
-		for (int i = 0; i < 800000; i++)	/* Wait a bit. */
-			__asm__("nop");
-	}
+	while(1);
 
 	return 0;
 }
