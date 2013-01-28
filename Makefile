@@ -2,6 +2,7 @@
 ## This file is part of the libopencm3 project.
 ##
 ## Copyright (C) 2009 Uwe Hermann <uwe@hermann-uwe.de>
+## Copyright (C) 2013 Rikard Lindström <ornotermes@gmail.com>
 ##
 ## This library is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU Lesser General Public License as published by
@@ -19,8 +20,10 @@
 
 BINARY = mini-stm32
 
-LDSCRIPT = ../stm32-h103.ld
+LDSCRIPT = stm32-h103.ld
 
-include ../../Makefile.include
+include Makefile.include
 
-CFLAGS += -std=c99 
+CFLAGS += -std=c99
+
+#CFLAFS += -Os
