@@ -55,6 +55,9 @@
 
 //---- Variables -------------------------------------------------------------//
 
+//Store display model, if you want to know exactly what display you have.
+uint16_t _ili9325Model = 0;
+
 //Store rotation information for ili9325GoTo. Set this from ili9325Orientation
 uint8_t _ili9325Rotation = 0; //Don't set it by hand, use ili9325_orientation()
 
@@ -81,6 +84,8 @@ uint16_t	ili9325PortRead(void);
 void		ili9325WriteCommand(uint16_t command);
 void		ili9325WriteData(uint16_t data);
 void		ili9325WriteRegister(uint16_t reg, uint16_t data);
+uint16_t	ili9325ReadReg(uint16_t reg);
+uint16_t	ili9325ReadData();
 void		ili9325Init(void);
 void		ili9325GoTo(uint16_t x, uint16_t y);
 void		ili9325Clear(uint16_t color);

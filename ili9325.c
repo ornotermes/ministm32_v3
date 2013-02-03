@@ -23,8 +23,8 @@ void ili9325PortDirection(bool input)
 {
 	if (input)
 	{
-		gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_INPUT_FLOAT, 0xff00);	//PB8:PB15=(DB8:DB15)
-		gpio_set_mode(GPIOC, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_INPUT_FLOAT, 0x00ff);	//PC0:PC12=(DB0:DB7)
+		gpio_set_mode(GPIOB, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, 0xff00);	//PB8:PB15=(DB8:DB15)
+		gpio_set_mode(GPIOC, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, 0x00ff);	//PC0:PC12=(DB0:DB7)
 	}
 	else //output
 	{
@@ -45,7 +45,7 @@ void ili9325PortWrite(uint16_t bits)
 //Get data from DB0:DB15
 uint16_t ili9325PortRead()
 {
-	return (gpio_port_read(GPIOC) & 0x00ff) | (gpio_port_read(GPIOB) & 0xff00);
+	return gpio_get(GPIOC, 0x00ff) | gpio_get(GPIOB, 0xff00);
 }
 
 //Write a command, like a register address
@@ -75,10 +75,32 @@ void ili9325WriteRegister(uint16_t reg, uint16_t data)
 	ili9325CS(1);
 }
 
-/*uint16_t ili9325ReadData() TODO
+//Read a register
+uint16_t ili9325ReadReg(uint16_t reg)
 {
-	__asm__("nop");
-}*/
+	uint16_t data = 0;
+	ili9325CS(0);
+	ili9325WriteCommand(reg);
+	ili9325PortDirection(1);
+	ili9325RD(0);
+	data = gpio_get(GPIOB, 0xff00) | gpio_get(GPIOC, 0x00ff);
+	ili9325RD(1);
+	ili9325PortDirection(0);
+	ili9325CS(1);
+	return data;
+}
+
+//Read current data
+uint16_t ili9325ReadData()
+{
+	uint16_t data = 0;
+	ili9325PortDirection(1);
+	ili9325RD(0);
+	data = ili9325PortRead();
+	ili9325RD(1);
+	ili9325PortDirection(0);
+	return data;
+}
 
 void ili9325Init(void)
 {
@@ -92,31 +114,50 @@ void ili9325Init(void)
 	ili9325RD(1);
 	
 	ili9325PortDirection(0);
-
-	//PSU part I (set VC[2:0], VRH[3:0], VCM[5:0], VDV[5:0], PON=0, BT[2:0]=000)
-	ili9325WriteRegister(0x0010,0x0000); //Power Control 1 - BTmask0x0700
-	ili9325WriteRegister(0x0011,0x0007); //Power Control 2 - VCmask0x0007=0x0007(Vref(Vci1)=1.0 * Vci)
-	ili9325WriteRegister(0x0012,0x008d); //Power Control 3 - VCIREmask0x0080=0x0080(2.5Vref), VRHmask0x000f=0x000d(VREG1OUT=4.625V), PONmask0x0000=0x0000(VGL output enable)
-	ili9325WriteRegister(0x0013,0x1900); //Power Control 4 - VDVmask0x1f00=0x1900(Vcom = VREG1OUT * 1.24)
-	ili9325WriteRegister(0x0029,0x0025); //Power Control 7 - VCMmask0x003f=0x0025(VcomH = VREG1OUT * 0.87)
+		
+	_ili9325Model = ili9325ReadReg(0x0000);
 	
-	//stabilizing time for PSU(rec 50ms+)
-	for (int i = 0; i < 50000; i++) __asm__("nop");
+	switch (_ili9325Model)
+	{
 	
-	//PSU part II (Set BT[2:0], PON=1, AP[2:0], APE=1, DC1[2:0], DC2[2:0]
-	ili9325WriteRegister(0x0010,0x1690); //Power Control 1 - SAPmask0x1000=0x1000(Source driver enable), BTmask0x0700=0x0600(step up factor), APmask0x0070=0x0010(Contrast G1.0/S1.0), APEmask0x0080=0x0080(enable PSU)
-	ili9325WriteRegister(0x0012,0x009d); //Power Control 3 - VCIREmask0x0080=0x0080(2.5Vref), VRHmask0x000f=0x000d(VREG1OUT=4.625V), PONmask0x0000=0x0010(VGL output enable)
+	//Init code for ili9325
+	case 0x9325:
+		//PSU part I (set VC[2:0], VRH[3:0], VCM[5:0], VDV[5:0], PON=0, BT[2:0]=000)
+		ili9325WriteRegister(0x0010,0x0000); //Power Control 1 - BTmask0x0700
+		ili9325WriteRegister(0x0011,0x0007); //Power Control 2 - VCmask0x0007=0x0007(Vref(Vci1)=1.0 * Vci)
+		ili9325WriteRegister(0x0012,0x008d); //Power Control 3 - VCIREmask0x0080=0x0080(2.5Vref), VRHmask0x000f=0x000d(VREG1OUT=4.625V), PONmask0x0000=0x0000(VGL output enable)
+		ili9325WriteRegister(0x0013,0x1900); //Power Control 4 - VDVmask0x1f00=0x1900(Vcom = VREG1OUT * 1.24)
+		ili9325WriteRegister(0x0029,0x0025); //Power Control 7 - VCMmask0x003f=0x0025(VcomH = VREG1OUT * 0.87)
 	
-	//stabilizing time for PSU(rec 80ms+)
-	for (int i = 0; i < 80000; i++) __asm__("nop");
+		//stabilizing time for PSU(rec 50ms+)
+		for (int i = 0; i < 50000; i++) __asm__("nop");
 	
-	//Set other registers
-	ili9325WriteRegister(0x0060,0x2700); //Gate Scan Control 1 - LVmask0x3f00=0x2700(320 lines)
-	ili9325WriteRegister(0x0061,0x0001); //Gate Scan Control 2 - REVmask0x0001=0x0001(greyscale inverstion)
-	ili9325WriteRegister(0x0003,0x1030); //Set default GRAM Acces Direction for default rotation (vertical/0)
+		//PSU part II (Set BT[2:0], PON=1, AP[2:0], APE=1, DC1[2:0], DC2[2:0]
+		ili9325WriteRegister(0x0010,0x1690); //Power Control 1 - SAPmask0x1000=0x1000(Source driver enable), BTmask0x0700=0x0600(step up factor), APmask0x0070=0x0010(Contrast G1.0/S1.0), APEmask0x0080=0x0080(enable PSU)
+		ili9325WriteRegister(0x0012,0x009d); //Power Control 3 - VCIREmask0x0080=0x0080(2.5Vref), VRHmask0x000f=0x000d(VREG1OUT=4.625V), PONmask0x0000=0x0010(VGL output enable)
 	
-	//Enable display
-	ili9325WriteRegister(0x0007,0x0133); //Display Control 1
+		//stabilizing time for PSU(rec 80ms+)
+		for (int i = 0; i < 80000; i++) __asm__("nop");
+	
+		//Set other registers
+		ili9325WriteRegister(0x0060,0x2700); //Gate Scan Control 1 - LVmask0x3f00=0x2700(320 lines)
+		ili9325WriteRegister(0x0061,0x0001); //Gate Scan Control 2 - REVmask0x0001=0x0001(greyscale inverstion)
+		ili9325WriteRegister(0x0003,0x1030); //Set default GRAM Acces Direction for default rotation (vertical/0)
+	
+		//Enable display
+		ili9325WriteRegister(0x0007,0x0133); //Display Control 1
+		break;
+	
+	//if display not identified, flash led
+	default:
+		while(1)
+		{
+			gpio_toggle(GPIOA, BIT1);
+			for(int i = 0; i<50000; i++)i=i;
+		}
+	
+	}
+	
 }
 
 //Fill the screen with one color

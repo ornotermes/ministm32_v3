@@ -66,6 +66,21 @@ int main(void)
 	ili9325SetColor(C16_MAGENTA,0,0);
 	ili9325PrintString("1234abcdABCD?!@,._");
 	
+	//Display model
+	char s[] = "ilixxxx";
+	for(char i=0; i<4; i++)
+	{
+		char n = ( _ili9325Model >> (i*4) ) & 0xf;
+		if (n > 9) n+='a'-10;
+		else n+='0';
+		s[6-i] = n;
+	}
+	
+	ili9325SetLocation(0,96);
+	ili9325SetFont(8);
+	ili9325SetColor(C16_RED,0,0);
+	ili9325PrintString(s);
+	
 	//7-seg display
 	ili9325SetColor(C16_BLUE,0,C16_DK_BLUE);
 	for(uint8_t d = 0; d < 18; d++)
