@@ -52,6 +52,7 @@
 #define ili9325WR(x)		(x)?gpio_set(GPIOC, GPIO10):gpio_clear(GPIOC, GPIO10)
 #define ili9325RD(x)		(x)?gpio_set(GPIOC, GPIO11):gpio_clear(GPIOC, GPIO11)
 #define ili9325Light(x) 	(x)?gpio_set(GPIOC, GPIO12):gpio_clear(GPIOC, GPIO12)
+#define ili9325PortWrite(x)	gpio_clear(GPIOC, 0x00ff); gpio_clear(GPIOB, 0xff00); gpio_set(GPIOC, ((x) & 0x00ff)); gpio_set(GPIOB, ((x) & 0xff00)) //Write x to port
 
 //---- Variables -------------------------------------------------------------//
 
@@ -78,8 +79,7 @@ uint16_t _ili9325LocationY = 0;
 
 //---- Function prototypes ---------------------------------------------------//
 
-void		ili9325PortDirection(bool input);
-void		ili9325PortWrite(uint16_t bits);		
+void		ili9325PortDirection(bool input);		
 uint16_t	ili9325PortRead(void);
 void		ili9325WriteCommand(uint16_t command);
 void		ili9325WriteData(uint16_t data);

@@ -33,15 +33,6 @@ void ili9325PortDirection(bool input)
 	}
 }
 
-//Put data on DB0:DB15
-void ili9325PortWrite(uint16_t bits)
-{
-	gpio_clear(GPIOC, 0x00ff);
-	gpio_clear(GPIOB, 0xff00);
-	gpio_set(GPIOC, (bits & 0x00ff));
-	gpio_set(GPIOB, (bits & 0xff00));
-}
-
 //Get data from DB0:DB15
 uint16_t ili9325PortRead()
 {
@@ -143,6 +134,7 @@ void ili9325Init(void)
 		ili9325WriteRegister(0x0060,0x2700); //Gate Scan Control 1 - LVmask0x3f00=0x2700(320 lines)
 		ili9325WriteRegister(0x0061,0x0001); //Gate Scan Control 2 - REVmask0x0001=0x0001(greyscale inverstion)
 		ili9325WriteRegister(0x0003,0x1030); //Set default GRAM Acces Direction for default rotation (vertical/0)
+		ili9325WriteRegister(0x002B,0x000e); //Set frame rate to 112 fps
 	
 		//Enable display
 		ili9325WriteRegister(0x0007,0x0133); //Display Control 1
