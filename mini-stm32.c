@@ -17,82 +17,81 @@
 
 #include <libopencm3/stm32/f1/rcc.h>
 #include <libopencm3/stm32/f1/gpio.h>
+#include <libopencm3/stm32/usart.h>
 #include "ili9325.h"
-#include "gpl.h"
-#include "rainbow.h"
+#include "ads7843.h"
 
-/* Set STM32 to 72 MHz. */
-void setup(void)
+//--- Set some clocks. ---//
+void clock_setup(void)
 {
-	/* Select main clock */
+	// Select main clock //
 	rcc_clock_setup_in_hse_8mhz_out_72mhz();
+}
 
-	/* Enable GPIOA, GPIOB and GPIOC clock. */
+void gpio_setup(void)
+{
+
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPAEN);
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPBEN);
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPCEN);
+	
+	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_2_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, BIT2 | BIT3); //LEDs
+	gpio_toggle(GPIOA, BIT2);
+	
+}
+
+//--- Set up USART1 with 115200bps 8N1 ---/
+void serial_setup(void)
+{
+
+	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_USART1EN);
+
+	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO_USART1_TX);
+	gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO_USART1_RX);
+
+	usart_set_baudrate(USART1, 115200);
+	usart_set_databits(USART1, 8);
+	usart_set_stopbits(USART1, USART_STOPBITS_1);
+	usart_set_parity(USART1, USART_PARITY_NONE);
+	usart_set_flow_control(USART1, USART_FLOWCONTROL_NONE);
+	usart_set_mode(USART1, USART_MODE_TX_RX);
+	usart_enable(USART1);
+
 }
 
 int main(void)
 {
-	setup();
+	clock_setup();
+	gpio_setup();
+	serial_setup();
 	
 	ili9325Init();
 	ili9325Orientation(1);
     ili9325Clear(C16_BLACK);
 	ili9325Light(1);
 	
-	//rainbow banner
-	ili9325Image(&rainbow_width, &rainbow_height, &rainbow_colors, &rainbow_data, 0, 0);
-	
 	//Hello world in two colors
-	ili9325SetLocation(120,24);
-	ili9325SetColor(C16_GREEN,0,0);
-	ili9325PrintString("Hello ");
-	ili9325SetColor(C16_YELLOW,0,0);
-	ili9325PrintString("World");
-	ili9325SetColor(C16_GREEN,0,0);
-	ili9325PrintString("!");
-	
-	//Normal 8px text
-	ili9325SetLocation(0,64);
-	ili9325SetFont(8);
-	ili9325SetColor(C16_CYAN,0,0);
-	ili9325PrintString("1234abcdABCD?!@,._");
-	
-	//Bold 8px text
-	ili9325SetLocation(0,80);
-	ili9325SetFont(9);
-	ili9325SetColor(C16_MAGENTA,0,0);
-	ili9325PrintString("1234abcdABCD?!@,._");
+	ili9325SetLocation(0,0);
+	ili9325SetColor(C16_AMBER,0,0);
+	ili9325PrintString("The cake is a lie!\n");
 	
 	//Display model
-	char s[] = "ilixxxx";
+	char s[] = "Display: ilixxxx\n";
 	for(char i=0; i<4; i++)
 	{
 		char n = ( _ili9325Model >> (i*4) ) & 0xf;
 		if (n > 9) n+='a'-10;
 		else n+='0';
-		s[6-i] = n;
+		s[15-i] = n;
 	}
-	
-	ili9325SetLocation(0,96);
-	ili9325SetFont(8);
-	ili9325SetColor(C16_RED,0,0);
 	ili9325PrintString(s);
 	
-	//7-seg display
-	ili9325SetColor(C16_BLUE,0,C16_DK_BLUE);
-	for(uint8_t d = 0; d < 18; d++)
-	{
-		ili9325SetLocation(0,80);
-		ili9325PrintDigit(d,d*16,120);
-	}
-		
-	//GPL v3 symbol
-	ili9325Image(&gpl_width, &gpl_height, &gpl_colors, &gpl_data, 96, 180);
+	ads7843_setup();
+	ili9325PrintString("Touch screen initialized.\n");
 	
-	while(1);
+	while(1)
+	{
+	}
 
 	return 0;
 }
