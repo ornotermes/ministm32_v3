@@ -43,6 +43,7 @@
 #define C16_DK_CYAN		0x01ee
 #define C16_MAGENTA		0xf81f
 #define C16_DK_MAGENTA	0x3807
+#define C16_AMBER		0b1111110101100000
 
 #define ili9325Width	240
 #define ili9325Height	320
@@ -53,6 +54,8 @@
 #define ili9325RD(x)		(x)?gpio_set(GPIOC, GPIO11):gpio_clear(GPIOC, GPIO11)
 #define ili9325Light(x) 	(x)?gpio_set(GPIOC, GPIO12):gpio_clear(GPIOC, GPIO12)
 #define ili9325PortWrite(x)	gpio_clear(GPIOC, 0x00ff); gpio_clear(GPIOB, 0xff00); gpio_set(GPIOC, ((x) & 0x00ff)); gpio_set(GPIOB, ((x) & 0xff00)) //Write x to port
+//#define ili9325PortWrite(x)	GPIO_BSRR(GPIOC) = (0x00ff & !x)<<16 | (0x00ff & x); GPIO_BSRR(GPIOB) = (0xff00 & !x)<<16 | (0xff00 & x)
+#define ili9325WriteData(x)	ili9325PortWrite(x); ili9325WR(0); ili9325WR(1) //Write data to display
 
 //---- Variables -------------------------------------------------------------//
 
@@ -77,12 +80,14 @@ uint16_t _ili9325ColorFill = C16_GRAY;
 uint16_t _ili9325LocationX = 0;
 uint16_t _ili9325LocationY = 0;
 
+//Text Line Break X Offset
+uint16_t _ili9325TextXOffset = 0;
+
 //---- Function prototypes ---------------------------------------------------//
 
 void		ili9325PortDirection(bool input);		
 uint16_t	ili9325PortRead(void);
 void		ili9325WriteCommand(uint16_t command);
-void		ili9325WriteData(uint16_t data);
 void		ili9325WriteRegister(uint16_t reg, uint16_t data);
 uint16_t	ili9325ReadReg(uint16_t reg);
 uint16_t	ili9325ReadData();

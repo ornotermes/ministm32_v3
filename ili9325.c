@@ -49,14 +49,6 @@ void ili9325WriteCommand(uint16_t command)
 	ili9325RS(1);
 }
 
-//Write data to display
-void ili9325WriteData(uint16_t data)
-{
-	ili9325PortWrite(data);
-	ili9325WR(0);
-	ili9325WR(1);
-}
-
 //Write data to register
 void ili9325WriteRegister(uint16_t reg, uint16_t data)
 {
@@ -96,7 +88,7 @@ uint16_t ili9325ReadData()
 void ili9325Init(void)
 {
 
-	/* Hardware setup */
+	// Hardware setup //
 
 	gpio_set_mode(GPIOC, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, 0x1f00);	//PC8=CS, PC9=RS, PC10=WR, PC11=RD, PC12=LIGHT)
 	ili9325CS(1);
@@ -105,6 +97,8 @@ void ili9325Init(void)
 	ili9325RD(1);
 	
 	ili9325PortDirection(0);
+	
+	// Software Init //
 		
 	_ili9325Model = ili9325ReadReg(0x0000);
 	
@@ -121,7 +115,7 @@ void ili9325Init(void)
 		ili9325WriteRegister(0x0029,0x0025); //Power Control 7 - VCMmask0x003f=0x0025(VcomH = VREG1OUT * 0.87)
 	
 		//stabilizing time for PSU(rec 50ms+)
-		for (int i = 0; i < 50000; i++) __asm__("nop");
+		for (int i = 0; i < 15000; i++) __asm__("nop");
 	
 		//PSU part II (Set BT[2:0], PON=1, AP[2:0], APE=1, DC1[2:0], DC2[2:0]
 		ili9325WriteRegister(0x0010,0x1690); //Power Control 1 - SAPmask0x1000=0x1000(Source driver enable), BTmask0x0700=0x0600(step up factor), APmask0x0070=0x0010(Contrast G1.0/S1.0), APEmask0x0080=0x0080(enable PSU)
@@ -139,13 +133,15 @@ void ili9325Init(void)
 		//Enable display
 		ili9325WriteRegister(0x0007,0x0133); //Display Control 1
 		break;
+		for (int i = 0; i < 10000; i++) __asm__("nop");
 	
 	//if display not identified, flash led
 	default:
+		gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_2_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, BIT2);
 		while(1)
 		{
-			gpio_toggle(GPIOA, BIT1);
-			for(int i = 0; i<50000; i++)i=i;
+			gpio_toggle(GPIOA, BIT2);
+			for(int i = 0; i<500000; i++)__asm__("nop");
 		}
 	
 	}
@@ -159,7 +155,9 @@ void ili9325Clear(uint16_t color)
 	ili9325CS(0);
 	ili9325WriteCommand(0x22);
 	for(int i = 0; i < (ili9325Width * ili9325Height); i++)
+	{
 		ili9325WriteData(color);
+	}
 	ili9325CS(1);
 }
 
@@ -291,8 +289,10 @@ void ili9325PrintChar(char character)
 	uint16_t color = 0;
 	switch(character)
 	{
+	case '\n':
 	case 13: //CR
 		_ili9325LocationY += (*_ili9325FontHeight);
+		_ili9325LocationX = _ili9325TextXOffset;
 		break;
 		
 	default:
