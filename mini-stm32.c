@@ -69,14 +69,13 @@ int main(void)
 	
 	ili9325Init();
 	ili9325Orientation(1);
-	ili9325BackInit(&back_width, &back_height, &back_colors[0], &back_data[0]);
-	ili9325BackDraw();
+	ili9325ColorSet(C16_WHITE,C16_BLUE,C16_BLACK);
+	ili9325BackImage(&back_width, &back_height, &back_colors[0], &back_data[0]);
+	ili9325BackMode(BACK_IMAGE);
+	ili9325Clear();
 	ili9325Light(1);
 	
-	//Hello world in two colors
-	ili9325SetLocation(0,0);
-	ili9325SetColor(C16_BLACK,0,0);
-	ili9325PrintStringBlend("The cake is a lie!\n");
+	ili9325PrintString("The cake is a lie!\n");
 	
 	//Display model
 	char s[] = "Display: ilixxxx\n";
@@ -87,10 +86,10 @@ int main(void)
 		else n+='0';
 		s[15-i] = n;
 	}
-	ili9325PrintStringBlend(s);
+	ili9325PrintString(s);
 	
 	ads7843_setup();
-	ili9325PrintStringBlend("Touch screen initialized.\n");
+	ili9325PrintString("Touch screen initialized.\n");
 	
 	while(1)
 	{

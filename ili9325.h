@@ -45,6 +45,12 @@
 #define C16_DK_MAGENTA	0x3807
 #define C16_AMBER		0b1111110101100000
 
+#define FONT_SOLID		0
+#define FONT_GRADIENT	1
+
+#define BACK_SOLID		0
+#define BACK_IMAGE		1
+
 #define ili9325Width	240
 #define ili9325Height	320
 
@@ -83,6 +89,10 @@ uint16_t _ili9325LocationY = 0;
 //Text Line Break X Offset
 uint16_t _ili9325TextXOffset = 0;
 
+//Text mode and backround mode fordifferent visual effects
+uint8_t _ili9325FontMode = FONT_SOLID;
+uint8_t _ili9325BackMode = BACK_SOLID;
+
 //Background Image address
 const uint16_t *_ili9325BackWidth;
 const uint16_t *_ili9325BackHeight;
@@ -99,7 +109,6 @@ uint16_t	ili9325ReadReg(uint16_t reg);
 uint16_t	ili9325ReadData();
 void		ili9325Init(void);
 void		ili9325GoTo(uint16_t x, uint16_t y);
-void		ili9325Clear(uint16_t color);
 void		ili9325Point(uint16_t color);
 void		ili9325Orientation(uint8_t rot);
 void		ili9325PrintDigit(uint8_t digit, uint16_t x, uint16_t y);
@@ -107,9 +116,10 @@ void		ili9325PrintChar(char character);
 void		ili9325PrintString(char chars[]);
 void		ili9325SetFont(uint8_t font);
 void		ili9325SetLocation(uint16_t x, uint16_t y);
-void		ili9325SetColor(uint16_t front, uint16_t back, uint16_t fill);
-void		ili9325Image(const uint16_t (*width), const uint16_t (*height), const uint16_t (*colors)[], const uint8_t (*data)[], uint16_t destX, uint16_t destY);
-void		ili9325BackDraw(void);
+void		ili9325ColorSet(uint16_t front, uint16_t back, uint16_t fill);
+void		ili9325BackImage(const uint16_t *width, const uint16_t *height, const uint16_t *colors, const uint8_t *data);
+void		ili9325BackMode(uint8_t mode);
+void		ili9325Clear(void);
 
 //---- Include source --------------------------------------------------------//
 

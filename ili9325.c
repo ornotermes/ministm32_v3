@@ -133,7 +133,7 @@ void ili9325Init(void)
 		//Enable display
 		ili9325WriteRegister(0x0007,0x0133); //Display Control 1
 		break;
-		for (int i = 0; i < 10000; i++) __asm__("nop");
+		for (int i = 0; i < 30000; i++) __asm__("nop");
 	
 	//if display not identified, flash led
 	default:
@@ -146,19 +146,6 @@ void ili9325Init(void)
 	
 	}
 	
-}
-
-//Fill the screen with one color
-void ili9325Clear(uint16_t color)
-{
-	ili9325GoTo(0,0);
-	ili9325CS(0);
-	ili9325WriteCommand(0x22);
-	for(int i = 0; i < (ili9325Width * ili9325Height); i++)
-	{
-		ili9325WriteData(color);
-	}
-	ili9325CS(1);
 }
 
 //Set screen orientation
@@ -276,7 +263,7 @@ void ili9325SetLocation(uint16_t x, uint16_t y)
 }
 
 //Set colors to use
-void ili9325SetColor(uint16_t front, uint16_t back, uint16_t fill)
+void ili9325ColorSet(uint16_t front, uint16_t back, uint16_t fill)
 {
 	_ili9325ColorFront = front;
 	_ili9325ColorBack = back;
@@ -305,13 +292,22 @@ void ili9325PrintChar(char character)
 			uint8_t charByte = (*_ili9325FontData)[(character)*(*_ili9325FontHeight)+y];
 			for (uint16_t x = 0; x < (*_ili9325FontWidth); x++)
 			{
-				if ( ( charByte & ( 1<<(8-x) ) ) > 0) color = _ili9325ColorFront;
-				else color = _ili9325ColorBack;
+				if ( ( charByte & ( 1<<(8-x) ) ) > 0) 
+				{
+					if ( _ili9325FontMode == FONT_SOLID ) color = _ili9325ColorFront;
+					if ( _ili9325BackMode == FONT_GRADIENT ) __asm__("nop");
+				}
+				else
+				{
+					if ( _ili9325BackMode == BACK_SOLID ) color = _ili9325ColorBack;
+					if ( _ili9325BackMode == BACK_IMAGE ) color = *(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*(_ili9325LocationY+y)+(_ili9325LocationX+x) )));
+				}
 				ili9325WriteData(color);
 			}
 			for (uint16_t x = 0; x < (*_ili9325FontSpace); x++)
 			{
-				ili9325WriteData(_ili9325ColorBack);
+				if ( _ili9325BackMode == BACK_SOLID ) { ili9325WriteData(_ili9325ColorBack); }
+				if ( _ili9325BackMode == BACK_IMAGE ) { ili9325WriteData(*(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*(_ili9325LocationY+y)+(_ili9325LocationX+x) )))); }
 			}
 			ili9325CS(1);
 		}
@@ -344,7 +340,7 @@ void ili9325Image(const uint16_t (*width), const uint16_t (*height), const uint1
 	}
 }
 
-void ili9325BackInit(const uint16_t *width, const uint16_t *height, const uint16_t *colors, const uint8_t *data)
+void ili9325BackImage(const uint16_t *width, const uint16_t *height, const uint16_t *colors, const uint8_t *data)
 {
 	_ili9325BackWidth = width;
 	_ili9325BackHeight = height;
@@ -352,62 +348,33 @@ void ili9325BackInit(const uint16_t *width, const uint16_t *height, const uint16
 	_ili9325BackData = data;
 }
 
-void ili9325BackDraw(void)
+void ili9325BackMode(uint8_t mode)
 {
+	_ili9325BackMode = mode;
+}
+
+void ili9325Clear(void)
+{
+	_ili9325LocationX = 0;
+	_ili9325LocationY = 0;
+	
 	for	(uint16_t y = 0; y < (*_ili9325BackHeight); y++)
 	{
-		ili9325GoTo(0, 0+y);
+		ili9325GoTo(0, 1+y);
 		ili9325CS(0);
 		ili9325WriteCommand(0x0022);
 		for (uint16_t x = 0; x < (*_ili9325BackWidth); x++)
 		{
-			ili9325WriteData( *(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*y+x ))));
+			if ( _ili9325BackMode == BACK_SOLID )
+			{
+				ili9325WriteData( _ili9325ColorBack );
+			}
+			if ( _ili9325BackMode == BACK_IMAGE )
+			{
+				ili9325WriteData(*(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*y+x) )));
+			}
 		}
 		ili9325CS(1);
-	}
-}
-
-void ili9325PrintCharBlend(char character)
-{
-	uint16_t color = 0;
-	switch(character)
-	{
-	case '\n':
-	case 13: //CR
-		_ili9325LocationY += (*_ili9325FontHeight);
-		_ili9325LocationX = _ili9325TextXOffset;
-		break;
-		
-	default:
-		character -= 32;
-		for	(uint16_t y = 0; y < (*_ili9325FontHeight); y++)
-		{
-			ili9325GoTo(_ili9325LocationX, _ili9325LocationY+y);
-			ili9325CS(0);
-			ili9325WriteCommand(0x0022);
-			uint8_t charByte = (*_ili9325FontData)[(character)*(*_ili9325FontHeight)+y];
-			for (uint16_t x = 0; x < (*_ili9325FontWidth); x++)
-			{
-				if ( ( charByte & ( 1<<(8-x) ) ) > 0) color = _ili9325ColorFront;
-				else color = *(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*(_ili9325LocationY+y)+(_ili9325LocationX+x) )));
-				ili9325WriteData(color);
-			}
-			for (uint16_t x = 0; x < (*_ili9325FontSpace); x++)
-			{
-				ili9325WriteData(*(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*(_ili9325LocationY+y)+(_ili9325LocationX+x) ))));
-			}
-			ili9325CS(1);
-		}
-		_ili9325LocationX += (*_ili9325FontWidth) + (*_ili9325FontSpace);
-		break;
-	}
-}
-
-void ili9325PrintStringBlend(char chars[])
-{
-	for(uint8_t c = 0; chars[c] != 0; c++)
-	{
-		ili9325PrintCharBlend(chars[c]);
 	}
 }
 
