@@ -309,6 +309,10 @@ void ili9325PrintChar(char character)
 				else color = _ili9325ColorBack;
 				ili9325WriteData(color);
 			}
+			for (uint16_t x = 0; x < (*_ili9325FontSpace); x++)
+			{
+				ili9325WriteData(_ili9325ColorBack);
+			}
 			ili9325CS(1);
 		}
 		_ili9325LocationX += (*_ili9325FontWidth) + (*_ili9325FontSpace);
@@ -337,6 +341,73 @@ void ili9325Image(const uint16_t (*width), const uint16_t (*height), const uint1
 			ili9325WriteData( (*colors)[(*data)[(*width)*y+x]] );
 		}
 		ili9325CS(1);
+	}
+}
+
+void ili9325BackInit(const uint16_t *width, const uint16_t *height, const uint16_t *colors, const uint8_t *data)
+{
+	_ili9325BackWidth = width;
+	_ili9325BackHeight = height;
+	_ili9325BackColors = colors;
+	_ili9325BackData = data;
+}
+
+void ili9325BackDraw(void)
+{
+	for	(uint16_t y = 0; y < (*_ili9325BackHeight); y++)
+	{
+		ili9325GoTo(0, 0+y);
+		ili9325CS(0);
+		ili9325WriteCommand(0x0022);
+		for (uint16_t x = 0; x < (*_ili9325BackWidth); x++)
+		{
+			ili9325WriteData( *(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*y+x ))));
+		}
+		ili9325CS(1);
+	}
+}
+
+void ili9325PrintCharBlend(char character)
+{
+	uint16_t color = 0;
+	switch(character)
+	{
+	case '\n':
+	case 13: //CR
+		_ili9325LocationY += (*_ili9325FontHeight);
+		_ili9325LocationX = _ili9325TextXOffset;
+		break;
+		
+	default:
+		character -= 32;
+		for	(uint16_t y = 0; y < (*_ili9325FontHeight); y++)
+		{
+			ili9325GoTo(_ili9325LocationX, _ili9325LocationY+y);
+			ili9325CS(0);
+			ili9325WriteCommand(0x0022);
+			uint8_t charByte = (*_ili9325FontData)[(character)*(*_ili9325FontHeight)+y];
+			for (uint16_t x = 0; x < (*_ili9325FontWidth); x++)
+			{
+				if ( ( charByte & ( 1<<(8-x) ) ) > 0) color = _ili9325ColorFront;
+				else color = *(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*(_ili9325LocationY+y)+(_ili9325LocationX+x) )));
+				ili9325WriteData(color);
+			}
+			for (uint16_t x = 0; x < (*_ili9325FontSpace); x++)
+			{
+				ili9325WriteData(*(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*(_ili9325LocationY+y)+(_ili9325LocationX+x) ))));
+			}
+			ili9325CS(1);
+		}
+		_ili9325LocationX += (*_ili9325FontWidth) + (*_ili9325FontSpace);
+		break;
+	}
+}
+
+void ili9325PrintStringBlend(char chars[])
+{
+	for(uint8_t c = 0; chars[c] != 0; c++)
+	{
+		ili9325PrintCharBlend(chars[c]);
 	}
 }
 

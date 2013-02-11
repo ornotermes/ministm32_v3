@@ -83,6 +83,12 @@ uint16_t _ili9325LocationY = 0;
 //Text Line Break X Offset
 uint16_t _ili9325TextXOffset = 0;
 
+//Background Image address
+const uint16_t *_ili9325BackWidth;
+const uint16_t *_ili9325BackHeight;
+const uint16_t *_ili9325BackColors;
+const uint8_t *_ili9325BackData;
+
 //---- Function prototypes ---------------------------------------------------//
 
 void		ili9325PortDirection(bool input);		
@@ -103,6 +109,7 @@ void		ili9325SetFont(uint8_t font);
 void		ili9325SetLocation(uint16_t x, uint16_t y);
 void		ili9325SetColor(uint16_t front, uint16_t back, uint16_t fill);
 void		ili9325Image(const uint16_t (*width), const uint16_t (*height), const uint16_t (*colors)[], const uint8_t (*data)[], uint16_t destX, uint16_t destY);
+void		ili9325BackDraw(void);
 
 //---- Include source --------------------------------------------------------//
 
