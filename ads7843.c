@@ -41,7 +41,6 @@ void ads7843_setup(void)
 	spi_set_clock_polarity_0(SPI1);
 	spi_set_clock_phase_0(SPI1);
 	spi_set_dff_8bit(SPI1);
-	spi_send_lsb_first(SPI1);
 	spi_set_master_mode(SPI1);
 	spi_enable(SPI1);
 	
@@ -60,8 +59,8 @@ uint16_t ads7843_getPos(bool y)
 	uint16_t data = 0;
 	rcc_set_ppre2(RCC_CFGR_PPRE2_HCLK_DIV4);
 	ads7843CS(0);
-	spi_xfer(SPI1, BIT0 | ((y)?BIT1:0) | BIT3 | BIT5);
-	data |= spi_xfer(SPI1,0) <<8;
+	spi_xfer(SPI1, BIT7 | ((y)?BIT6:0) | BIT4 | BIT2);
+	data |= spi_xfer(SPI1,0)<<8;
 	data |= spi_xfer(SPI1,0);
 	ads7843CS(1);
 	rcc_set_ppre2(RCC_CFGR_PPRE2_HCLK_NODIV);
@@ -73,28 +72,7 @@ uint16_t ads7843_getPos(bool y)
 void exti15_10_isr(void)
 {
 	gpio_toggle(GPIOA, BIT2); //TODO
-	uint16_t touchX = ads7843_getPos(0);
-	uint16_t touchY = ads7843_getPos(1);
-	
-	char s[] = "Touch event: (xxxxxx, xxxxxx), ";
-	for(char i=0; i<6; i++)
-	{
-		char n = ( touchX >> (i*4) ) & 0xf;
-		if (n > 9) n+='a'-10;
-		else n+='0';
-		s[19-i] = n;
-		n = ( touchY >> (i*4) ) & 0xf;
-		if (n > 9) n+='a'-10;
-		else n+='0';
-		s[27-i] = n;
-	}
-	ili9325PrintString(s);
-	
-	if (ads7843PEN()) ili9325PrintString("release.\n");
-	else ili9325PrintString("press.\n");
-	
 	exti_reset_request(EXTI13);
-	
 }
 
 #endif
