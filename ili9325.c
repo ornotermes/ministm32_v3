@@ -279,6 +279,7 @@ void ili9325PrintChar(char character)
 	case '\n':
 	case 13: //CR
 		_ili9325LocationY += (*_ili9325FontHeight);
+		if (_ili9325LocationY>((*_ili9325BackHeight)-(*_ili9325FontHeight))) _ili9325LocationY=0;
 		_ili9325LocationX = _ili9325TextXOffset;
 		break;
 		
