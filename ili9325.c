@@ -207,7 +207,7 @@ void ili9325GoTo(uint16_t x, uint16_t y)
 }
 
 //Put down a single colored dot.
-void ili9325Dot(uint16_t color)
+void ili9325Point(uint16_t color)
 {
 	ili9325WriteRegister(0x0022,color);
 }
