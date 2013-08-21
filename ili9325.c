@@ -301,14 +301,14 @@ void ili9325PrintChar(char character)
 				else
 				{
 					if ( _ili9325BackMode == BACK_SOLID ) color = _ili9325ColorBack;
-					if ( _ili9325BackMode == BACK_IMAGE ) color = *(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*(_ili9325LocationY+y)+(_ili9325LocationX+x) )));
+					if ( _ili9325BackMode == BACK_IMAGE ) color = *(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*(_ili9325LocationY+y-1)+(_ili9325LocationX+x) )));
 				}
 				ili9325WriteData(color);
 			}
-			for (uint16_t x = 0; x < (*_ili9325FontSpace); x++)
+			for (uint16_t x = (*_ili9325FontWidth); x < (*_ili9325FontWidth)+(*_ili9325FontSpace); x++)
 			{
 				if ( _ili9325BackMode == BACK_SOLID ) { ili9325WriteData(_ili9325ColorBack); }
-				if ( _ili9325BackMode == BACK_IMAGE ) { ili9325WriteData(*(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*(_ili9325LocationY+y)+(_ili9325LocationX+x) )))); }
+				if ( _ili9325BackMode == BACK_IMAGE ) { ili9325WriteData(*(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*(_ili9325LocationY+y-1)+(_ili9325LocationX+x) )))); }
 			}
 			ili9325CS(1);
 		}
