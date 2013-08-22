@@ -61,6 +61,17 @@ void serial_setup(void)
 
 }
 
+void printhex(unsigned int i) {
+	ili9325PrintString("0x");
+	for(unsigned int digit=0x1000;digit!=0;digit/=16) {
+		unsigned char c=((i/digit)%16);
+		if(c<10)
+			ili9325PrintChar('0'+c);
+		else
+			ili9325PrintChar('a'+c-10);
+	}
+}
+
 int main(void)
 {
 	clock_setup();
@@ -93,6 +104,20 @@ int main(void)
 	
 	while(1)
 	{
+		unsigned long x=ads7843_getPos(0)/8;
+		unsigned long y=ads7843_getPos(1)/8;
+		ili9325SetLocation(30,215);
+		ili9325PrintString("Touch event: ");
+		printhex(x);
+		ili9325PrintString(", ");
+		printhex(y);
+		if (ads7843PEN()) ili9325PrintString(" release.\n");
+		else              ili9325PrintString(" press.  \n");
+		
+		if (!ads7843PEN()) {
+			ili9325GoTo(320-x*320/0x1000, y*240/0x1000);
+			ili9325Point(C16_WHITE);
+		}
 	}
 
 	return 0;
