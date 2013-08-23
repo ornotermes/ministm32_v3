@@ -57,16 +57,6 @@ endif
 
 OBJS		+= $(BINARY).o
 
-OOCD		?= openocd
-OOCD_INTERFACE	?= flossjtag
-OOCD_BOARD	?= olimex_stm32_h103
-# Black magic probe specific variables
-# Set the BMP_PORT to a serial port and then BMP is used for flashing
-BMP_PORT        ?=
-# texane/stlink can be used by uncommenting this...
-# or defining it in your own makefiles
-#STLINK_PORT ?= :4242
-
 # Be silent per default, but 'make V=1' will show all compiler calls.
 ifneq ($(V),1)
 Q := @
