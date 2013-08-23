@@ -22,9 +22,10 @@
 PREFIX	?= arm-none-eabi
 CC		= $(PREFIX)-gcc
 LD		= $(PREFIX)-gcc
-OBJCOPY		= $(PREFIX)-objcopy
-OBJDUMP		= $(PREFIX)-objdump
+OBJCOPY	= $(PREFIX)-objcopy
+OBJDUMP	= $(PREFIX)-objdump
 GDB		= $(PREFIX)-gdb
+SIZE	= $(PREFIX)-size
 
 TOOLCHAIN_DIR ?= ../../../../..
 ifeq ($(wildcard ../../../../../lib/libopencm3_stm32f1.a),)
@@ -86,6 +87,7 @@ debug: $(BINARY).debug
 
 %.images: %.bin %.hex %.srec %.list
 	@#echo "*** $* images generated ***"
+	$(Q)$(SIZE) $(BINARY).hex
 
 %.bin: %.elf
 	@#printf "  OBJCOPY $(*).bin\n"
@@ -120,59 +122,27 @@ clean:
 	$(Q)rm -f *.srec
 	$(Q)rm -f *.list
 
-ifeq ($(STLINK_PORT),)
-ifeq ($(BMP_PORT),)
-ifeq ($(OOCD_SERIAL),)
-%.flash: %.hex
-	@printf "  FLASH   $<\n"
-	@# IMPORTANT: Don't use "resume", only "reset" will work correctly!
-	$(Q)$(OOCD) -f interface/$(OOCD_INTERFACE).cfg \
-		    -f board/$(OOCD_BOARD).cfg \
-		    -c "init" -c "reset init" \
-		    -c "stm32f1x mass_erase 0" \
-		    -c "flash write_image $(*).hex" \
-		    -c "reset" \
-		    -c "shutdown" $(NULL)
-else
-%.flash: %.hex
-	@printf "  FLASH   $<\n"
-	@# IMPORTANT: Don't use "resume", only "reset" will work correctly!
-	$(Q)$(OOCD) -f interface/$(OOCD_INTERFACE).cfg \
-		    -f board/$(OOCD_BOARD).cfg \
-		    -c "ft2232_serial $(OOCD_SERIAL)" \
-		    -c "init" -c "reset init" \
-		    -c "stm32f1x mass_erase 0" \
-		    -c "flash write_image $(*).hex" \
-		    -c "reset" \
-		    -c "shutdown" $(NULL)
-endif
-else
-%.flash: %.elf
+%.flash: %.images
 	@echo "  GDB   $(*).elf (flash)"
 	$(Q)$(GDB) --batch \
-		   -ex 'target extended-remote $(BMP_PORT)' \
-		   -x $(TOOLCHAIN_DIR)/scripts/black_magic_probe_flash.scr \
-		   $(*).elf
-endif
-else
-%.flash: %.elf
-	@echo "  GDB   $(*).elf (flash)"
-	$(Q)$(GDB) --batch \
-		   -ex 'target extended-remote $(STLINK_PORT)' \
-		   -x $(SCRIPT_DIR)/libopencm3/scripts/stlink_flash.scr \
-		   $(*).elf
-endif
+		-ex "target remote :3333" \
+		-ex "set remote hardware-breakpoint-limit 6" \
+		-ex "set remote hardware-watchpoint-limit 4" \
+		-ex "monitor reset halt" \
+		-ex "load" \
+		-ex "monitor reset" \
+		$(*).elf
 
-%.debug: %.elf
+%.debug: %.images
 	@echo "  GDB   $(*).elf (debug)"
 	$(Q)$(GDB) \
-	-ex "target remote :3333" \
-	-ex "set remote hardware-breakpoint-limit 6" \
-	-ex "set remote hardware-watchpoint-limit 4" \
-	-ex "monitor reset halt" \
-	-ex "load" \
-	-ex "monitor reset" \
-	$(*).elf
+		-ex "target remote :3333" \
+		-ex "set remote hardware-breakpoint-limit 6" \
+		-ex "set remote hardware-watchpoint-limit 4" \
+		-ex "monitor reset halt" \
+		-ex "load" \
+		-ex "monitor reset" \
+		$(*).elf
 
 .PHONY: images clean
 
