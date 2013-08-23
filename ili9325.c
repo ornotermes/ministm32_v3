@@ -359,12 +359,12 @@ void ili9325Clear(void)
 	_ili9325LocationX = 0;
 	_ili9325LocationY = 0;
 	
-	for	(uint16_t y = 0; y < (*_ili9325BackHeight); y++)
+	for	(uint16_t y = 0; y < ili9325Width; y++)
 	{
 		ili9325GoTo(0, 1+y);
 		ili9325CS(0);
 		ili9325WriteCommand(0x0022);
-		for (uint16_t x = 0; x < (*_ili9325BackWidth); x++)
+		for (uint16_t x = 0; x < ili9325Height; x++)
 		{
 			if ( _ili9325BackMode == BACK_SOLID )
 			{
@@ -372,7 +372,14 @@ void ili9325Clear(void)
 			}
 			if ( _ili9325BackMode == BACK_IMAGE )
 			{
-				ili9325WriteData(*(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*y+x) )));
+				if ( (y < (*_ili9325BackHeight)) & (x < (*_ili9325BackWidth)))
+				{
+					ili9325WriteData(*(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*y+x) )));
+				}
+				else
+				{
+					ili9325WriteData( _ili9325ColorBack );
+				}
 			}
 		}
 		ili9325CS(1);
