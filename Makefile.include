@@ -3,6 +3,7 @@
 ##
 ## Copyright (C) 2009 Uwe Hermann <uwe@hermann-uwe.de>
 ## Copyright (C) 2010 Piotr Esden-Tempski <piotr@esden.net>
+## Copyright (C) 2013 Rikard Lindström <ornotermes@gmail.com>
 ##
 ## This library is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU Lesser General Public License as published by
@@ -19,7 +20,6 @@
 ##
 
 PREFIX	?= arm-none-eabi
-#PREFIX		?= arm-elf
 CC		= $(PREFIX)-gcc
 LD		= $(PREFIX)-gcc
 OBJCOPY		= $(PREFIX)-objcopy
@@ -82,6 +82,7 @@ all: images
 
 images: $(BINARY).images
 flash: $(BINARY).flash
+debug: $(BINARY).debug
 
 %.images: %.bin %.hex %.srec %.list
 	@#echo "*** $* images generated ***"
@@ -161,6 +162,17 @@ else
 		   -x $(SCRIPT_DIR)/libopencm3/scripts/stlink_flash.scr \
 		   $(*).elf
 endif
+
+%.debug: %.elf
+	@echo "  GDB   $(*).elf (debug)"
+	$(Q)$(GDB) \
+	-ex "target remote :3333" \
+	-ex "set remote hardware-breakpoint-limit 6" \
+	-ex "set remote hardware-watchpoint-limit 4" \
+	-ex "monitor reset halt" \
+	-ex "load" \
+	-ex "monitor reset" \
+	$(*).elf
 
 .PHONY: images clean
 
