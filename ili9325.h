@@ -120,6 +120,7 @@ void		ili9325ColorSet(uint16_t front, uint16_t back, uint16_t fill);
 void		ili9325BackImage(const uint16_t *width, const uint16_t *height, const uint16_t *colors, const uint8_t *data);
 void		ili9325BackMode(uint8_t mode);
 void		ili9325Clear(void);
+void		ili9325printf( char * fmt, ... );
 
 //---- Include source --------------------------------------------------------//
 

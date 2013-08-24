@@ -18,6 +18,8 @@
 #ifndef ILI9325_C
 #define ILI9325_C
 
+#include <stdarg.h>
+
 //Set port direction. 0: output, 1: input.
 void ili9325PortDirection(bool input)
 {
@@ -384,6 +386,205 @@ void ili9325Clear(void)
 		}
 		ili9325CS(1);
 	}
+}
+
+void ili9325printf( char * fmt, ... )
+{
+	va_list args;
+	char *p; //Pointer to fmt char
+	char format = 0; //In format reading mode
+	char formatFill = ' '; //Fill character
+	char formatSign = 0; //Always sign (+/-)
+	char formatReset = 0; //Reset all settings when we are done with a format
+	char formatOutput[13]; //Temporary output buffer
+	char i = 0; //For flipping formatOutput
+	int formatPadding = 0; //How many charecters the format should use
+	
+	int formatInt = 0;
+	unsigned int formatUnsigned = 0;
+	char *formatString;
+	
+	va_start (args, fmt);
+	
+	for(p=fmt; *p>0; p++)
+	{	
+		if (*p == '%')
+		{
+			format = 1;
+			p++;
+		}
+		
+
+		if(format)
+		{
+			switch(*p)
+			{				
+			case 'c':
+				formatInt = va_arg( args, int );
+				ili9325PrintChar(formatInt);
+				formatReset = 1;
+				break;
+				
+			case 'd':
+			case 'i':
+				formatInt = va_arg( args, int ); //Load next number from argument list
+				if(formatSign && formatInt>=0) ili9325PrintChar('+'); //Print + if sign is requested and number is poitive
+				if(formatInt<0)
+				{
+					ili9325PrintChar('-'); //always show - if number i negative
+					formatInt = formatInt - formatInt - formatInt; //make number positive to make modulud and division to work
+				}
+				i = 0;
+				if( formatInt == 0 )
+				{
+					formatOutput[i] = (char)('0'); //If number is zero show that, the function for other numbers won't do it
+					i++;
+				}
+				for(; formatInt; i++) //Convert the number, when formatInt == 0 there is nothing more to convert
+				{
+					char mod = formatInt % 10; //Extract least significant base 10 digit
+					formatOutput[i] = (char)('0'+mod); //Add the numerical value of '0' to make a character
+					formatInt = (formatInt - mod) / 10; //Divide by 10 to create a new least significant digit
+				}
+				for(int j = 0; j < (formatPadding - i - formatSign); j++) //calculate about of padding needed.
+				{
+					ili9325PrintChar(formatFill);
+				}
+				for( ; i > 0; i--) ili9325PrintChar(formatOutput[i-1]); //Print the last extracted digit first (that was most significat digit in the original number)
+				formatReset = 1; //We are done with this format, clean up
+				break;
+				
+			case 'u':
+				formatUnsigned = va_arg( args, unsigned int );
+				i = 0;
+				if( formatUnsigned == 0 )
+				{
+					formatOutput[i] = (char)('0');
+					i++;
+				}
+				for(; formatUnsigned; i++)
+				{
+					char mod = formatUnsigned % 10;
+					formatOutput[i] = (char)('0'+mod);
+					formatUnsigned = (formatUnsigned - mod) / 10;
+				}
+				for(int j = 0; j < (formatPadding - i); j++) 
+				{
+					ili9325PrintChar(formatFill);
+				}
+				for( ; i > 0; i--) ili9325PrintChar(formatOutput[i-1]);
+				formatReset = 1;
+				break;
+				
+			case 'x':
+				formatUnsigned = va_arg( args, unsigned int );
+				i = 0;
+				if( formatUnsigned == 0 )
+				{
+					formatOutput[i] = (char)('0');
+					i++;
+				}
+				for(; formatUnsigned; i++)
+				{
+					char mod = formatUnsigned % 16;
+					if (mod > 9) formatOutput[i] = (char)('a'+mod-10);
+					else formatOutput[i] = (char)('0'+mod);
+					formatUnsigned = (formatUnsigned - mod) / 16;
+				}
+				for(int j = 0; j < (formatPadding - i); j++) 
+				{
+					ili9325PrintChar(formatFill);
+				}
+				for( ; i > 0; i--) ili9325PrintChar(formatOutput[i-1]);
+				formatReset = 1;
+				break;
+				
+			case 'X':
+				formatUnsigned = va_arg( args, unsigned int );
+				i = 0;
+				if( formatUnsigned == 0 )
+				{
+					formatOutput[i] = (char)('0');
+					i++;
+				}
+				for(i = 0; formatUnsigned; i++)
+				{
+					char mod = formatUnsigned % 16;
+					if (mod > 9) formatOutput[i] = (char)('A'+mod-10);
+					else formatOutput[i] = (char)('0'+mod);
+					formatUnsigned = (formatUnsigned - mod) / 16;
+				}
+				for(int j = 0; j < (formatPadding - i); j++) 
+				{
+					ili9325PrintChar(formatFill);
+				}
+				for( ; i > 0; i--) ili9325PrintChar(formatOutput[i-1]);
+				formatReset = 1;
+				break;
+				
+			case 'o':
+				formatUnsigned = va_arg( args, unsigned int );
+				i = 0;
+				if( formatUnsigned == 0 )
+				{
+					formatOutput[i] = (char)('0');
+					i++;
+				}
+				for(i = 0; formatUnsigned; i++)
+				{
+					char mod = formatUnsigned % 8;
+					formatOutput[i] = (char)('0'+mod);
+					formatUnsigned = (formatUnsigned - mod) / 8;
+				}
+				for(int j = 0; j < (formatPadding - i); j++) 
+				{
+					ili9325PrintChar(formatFill);
+				}
+				for( ; i > 0; i--) ili9325PrintChar(formatOutput[i-1]);
+				formatReset = 1;
+				break;
+				
+			case 's':
+				formatString = va_arg( args, char * );
+				ili9325PrintString(formatString);
+				formatReset = 1;
+				break;
+			
+			case '_':
+				formatFill='_';
+				break;
+
+			case '0':
+				if(formatPadding == 0) formatFill='0';
+			case '1' ... '9':
+				formatPadding *= 10;
+				formatPadding += ((*p) - '0');
+				break;
+				
+			case '+':
+				formatSign = 1;
+				break;
+				
+			case '%':
+				ili9325PrintChar('%');
+				formatReset = 1;
+				break;
+			}
+			
+			if(formatReset)
+			{
+				//Restore everything
+				format = 0;
+				formatFill = ' ';
+				formatSign = 0;
+				formatPadding = 0;
+				formatOutput[0] = '\0';
+				formatReset = 0;
+			}
+		}
+		else ili9325PrintChar(*p);
+	}
+	va_end(args);
 }
 
 #endif

@@ -18,10 +18,12 @@
 #include <libopencm3/stm32/f1/rcc.h>
 #include <libopencm3/stm32/f1/gpio.h>
 #include <libopencm3/stm32/usart.h>
+
 #include "ili9325.h"
 #include "ads7843.h"
 
 #include "back.h"
+
 
 //--- Set some clocks. ---//
 void clock_setup(void)
@@ -86,8 +88,6 @@ int main(void)
 	ili9325Clear();
 	ili9325Light(1);
 	
-	ili9325PrintString("The cake is a lie!\n");
-	
 	//Display model
 	char s[] = "Display: ilixxxx\n";
 	for(char i=0; i<4; i++)
@@ -101,6 +101,9 @@ int main(void)
 	
 	ads7843_setup();
 	ili9325PrintString("Touch screen initialized.\n");
+	
+	ili9325printf("Printf-test:\nc: %c\ni: %i\nu: %u\nx: %x\nX: %X\no: %o\ns: %s\n+08i: %+08i\n_9u: %_9u\n04x; %04x\ni: %i",\
+		 'x', 0-1234, 56789, 0x17af, 0xF3ED, 1597, ";D", 12, 64, 0xf3, 0);
 	
 	while(1)
 	{
