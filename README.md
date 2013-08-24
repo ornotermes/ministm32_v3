@@ -1,6 +1,3 @@
-# Build #
-This software is made to compile sat (Summon Arm Toolchan). https://github.com/esden/summon-arm-toolchain
-
 # License #
 Different files have different licenses, see each file for more info.
 Some of the licenses are:
