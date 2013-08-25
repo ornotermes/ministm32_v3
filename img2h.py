@@ -28,8 +28,9 @@ def argParser():
     p = argparse.ArgumentParser()
 
     p.add_argument( "-c", "--colors", dest="colors", default="256", metavar="nnn", help="Number of colors if downscaling, max 256.")
-    p.add_argument( "-d", "--dither", dest="dither", action="store_const", default=False, const=True, help="Diether if downscaling.")
-    p.add_argument( "-f", "--file", dest="file", default="-", metavar="/file.png", help="")
+    p.add_argument( "-d", "--dither", dest="dither", action="store_const", default=False, const=True, help="Dither if downscaling.")
+    p.add_argument( "-m", "--mask", dest="mask", action="store_const", default=False, const=True, help="Convert bitmap to mask")
+    p.add_argument( "-i", "--input", dest="input", default="-", metavar="/file.png", help="")
     p.add_argument( "-n", "--name", dest="name", default="", metavar="file", help="Name of the output structure.")
     p.add_argument( "-o", "--output", dest="output", default="", metavar="file", help="Name of output file.")
     
@@ -39,34 +40,63 @@ arg = argParser()
 	
 colors = int(arg["colors"])
 
-srcImg = Image.open(arg["file"])
-if arg["dither"]:	
-	pltImg = srcImg.convert("RGB").convert("P", colors=colors, palette=Image.ADAPTIVE)
-	tmpImg = srcImg.copy()
-	tmpImg.palette = pltImg.palette
-	newImg = tmpImg._new(tmpImg.im.convert('P', Image.FLOYDSTEINBERG))
-else:
-	newImg = srcImg.convert("RGB").convert("P", palette=Image.ADAPTIVE, colors=colors)
-if(len(arg["output"]) > 0):
-	newImg.save(arg["output"])
+srcImg = Image.open(arg["input"])
 
-print ("static const uint16_t {0}_width = {1};".format(arg["name"], newImg.size[0]))
-print ("static const uint16_t {0}_height = {1};".format(arg["name"], newImg.size[1]))
-print ("static const uint16_t {0}_colors[] = {{".format(arg["name"]))
-
-color_map = newImg.resize((colors, 1))
-color_map.putdata(range(colors))
-color_map = list(color_map.convert("RGB").getdata())
-for color in color_map:
-	print ("\t" + hex( ((color[0]&0xf8)<<8) | ((color[1]&0xfc)<<3) | ((color[2]&0xf8)>>3) )+", //R:%i G:%i B:#%i" % color)
-print ("};");
+if arg["mask"]:
+	colors = 2
+	newImg = srcImg.convert('1')
 	
-print ("static const uint8_t {0}_data[] = {{".format(arg["name"]))
-imgString=""
-for pixel in list(newImg.getdata()):
-	imgString += (str(pixel) + ", ")
-	if (len(imgString) > 59):
-		print ("\t" + imgString)
-		imgString = ""
-print ("\t" + imgString)
-print ("};");
+	if(len(arg["output"]) > 0):
+		newImg.save(arg["output"])
+
+	print ("static const uint16_t {0}_width = {1};".format(arg["name"], newImg.size[0]))
+	print ("static const uint16_t {0}_height = {1};".format(arg["name"], newImg.size[1]))
+	
+	print ("static const uint8_t {0}_data[] = {{".format(arg["name"]))
+	imgString=""
+	i=0
+	pixels = 0
+	for pixel in list(newImg.getdata()):
+		i += 1
+		pixels = (pixels << 1) | (1 & ~bool(pixel))
+		if i == 8:
+			imgString += (str(pixels) + ", ")
+			i = 0
+			pixels = 0
+		if (len(imgString) > 59):
+			print ("\t" + imgString)
+			imgString = ""
+	print ("\t" + imgString)
+	print ("};");
+	
+else:
+	if arg["dither"]:	
+		pltImg = srcImg.convert("RGB").convert("P", colors=colors, palette=Image.ADAPTIVE)
+		tmpImg = srcImg.copy()
+		tmpImg.palette = pltImg.palette
+		newImg = tmpImg._new(tmpImg.im.convert('P', Image.FLOYDSTEINBERG))
+	else:
+		newImg = srcImg.convert("RGB").convert("P", palette=Image.ADAPTIVE, colors=colors)
+	if(len(arg["output"]) > 0):
+		newImg.save(arg["output"])
+
+	print ("static const uint16_t {0}_width = {1};".format(arg["name"], newImg.size[0]))
+	print ("static const uint16_t {0}_height = {1};".format(arg["name"], newImg.size[1]))
+	print ("static const uint16_t {0}_colors[] = {{".format(arg["name"]))
+
+	color_map = newImg.resize((colors, 1))
+	color_map.putdata(range(colors))
+	color_map = list(color_map.convert("RGB").getdata())
+	for color in color_map:
+		print ("\t" + hex( ((color[0]&0xf8)<<8) | ((color[1]&0xfc)<<3) | ((color[2]&0xf8)>>3) )+", //R:%i G:%i B:#%i" % color)
+	print ("};");
+	
+	print ("static const uint8_t {0}_data[] = {{".format(arg["name"]))
+	imgString=""
+	for pixel in list(newImg.getdata()):
+		imgString += (str(pixel) + ", ")
+		if (len(imgString) > 59):
+			print ("\t" + imgString)
+			imgString = ""
+	print ("\t" + imgString)
+	print ("};");

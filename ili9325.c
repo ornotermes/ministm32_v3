@@ -343,6 +343,43 @@ void ili9325Image(const uint16_t (*width), const uint16_t (*height), const uint1
 	}
 }
 
+
+//Draw mask-image generated with img2h.py
+void ili9325Mask(const uint16_t (*width), const uint16_t (*height), const uint8_t (*data)[], uint16_t destX, uint16_t destY)
+{
+	char bit = 0;
+	uint8_t pixels = 0;
+	unsigned int byte = 0;
+	uint16_t color = 0;
+	for	(uint16_t y = 0; y < (*height); y++)
+	{
+		ili9325GoTo(destX, destY+y);
+		ili9325CS(0);
+		ili9325WriteCommand(0x0022);
+		for (uint16_t x = 0; x < (*width); x++)
+		{
+			if (bit == 0)
+			{
+				pixels = (*data)[byte];
+				byte++;
+				bit = 8;
+			}
+			bit--;
+			if( pixels & (1<<bit))
+			{
+				color = _ili9325ColorFront;
+			}
+			else
+			{
+				if ( _ili9325BackMode == BACK_SOLID ) color = _ili9325ColorBack;
+				if ( _ili9325BackMode == BACK_IMAGE ) color = *(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*(destY+y-1)+(destX+x) )));
+			}
+			ili9325WriteData(color);
+		}
+		ili9325CS(1);
+	}
+}
+
 void ili9325BackImage(const uint16_t *width, const uint16_t *height, const uint16_t *colors, const uint8_t *data)
 {
 	_ili9325BackWidth = width;

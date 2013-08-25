@@ -9,3 +9,5 @@ Some of the licenses are:
 
 ## Files ##
 rainbow.png: (c)2012 Rikard Lindström CC BY-SA 3.0
+back.png: (c)2013 Rikard Lindström CC BY-SA 3.0
+target.png: (c)2013 Rikard Lindström CC BY-SA 3.0
