@@ -83,10 +83,10 @@ int main(void)
 	ads7843_setup();
 	//ili9325PrintString("Touch screen initialized.\n");
 	
-	//ili9325printf("\nPrintf-test:\nc: %c\ni: %i\nu: %u\nx: %x\nX: %X\no: %o\ns: %s\n+08i: %+08i\n_9u: %_9u\n04x; %04x\ni: %i",\
-		 'x', 0-1234, 56789, 0x17af, 0xF3ED, 1597, ";D", 12, 64, 0xf3, 0);
 		 
 	ili9325Mask(&target_width, &target_height, &target_data[0], 160-16, 120-16);
+	/*ili9325printf("\nPrintf-test:\nc: %c\ni: %i\nu: %u\nx: %x\nX: %X\no: %o\ns: %s\n+08i: %+08i\n_9u: %_9u\n04x; %04x\ni: %i",\
+		 'x', 0-1234, 56789, 0x17af, 0xF3ED, 1597, ";D", 12, 64, 0xf3, 0);*/
 	
 	while(1)
 	{
