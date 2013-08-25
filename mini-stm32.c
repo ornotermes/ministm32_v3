@@ -22,7 +22,7 @@
 #include "ili9325.h"
 #include "ads7843.h"
 
-#include "back.h"
+//#include "back.h"
 #include "target.h"
 
 
@@ -84,8 +84,8 @@ int main(void)
 	ili9325Init();
 	ili9325Orientation(1);
 	ili9325ColorSet(C16_WHITE,C16_BLUE,C16_BLACK);
-	ili9325BackImage(&back_width, &back_height, &back_colors[0], &back_data[0]);
-	ili9325BackMode(BACK_IMAGE);
+	//ili9325BackImage(&back_width, &back_height, &back_colors[0], &back_data[0]);
+	//ili9325BackMode(BACK_IMAGE);
 	ili9325Clear();
 	ili9325Light(1);
 	//ili9325printf("Display: ili%04i\n", _ili9325Model;
