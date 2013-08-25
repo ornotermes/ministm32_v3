@@ -27,13 +27,13 @@
 
 
 //--- Set some clocks. ---//
-void clock_setup(void)
+void clockSetup(void)
 {
 	// Select main clock //
 	rcc_clock_setup_in_hse_8mhz_out_72mhz();
 }
 
-void gpio_setup(void)
+void gpioSetup(void)
 {
 
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPAEN);
@@ -45,7 +45,7 @@ void gpio_setup(void)
 }
 
 //--- Set up USART1 with 115200bps 8N1 ---/
-void serial_setup(void)
+void serialSetup(void)
 {
 
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_USART1EN);
@@ -65,9 +65,9 @@ void serial_setup(void)
 
 int main(void)
 {
-	clock_setup();
-	gpio_setup();
-	serial_setup();
+	clockSetup();
+	gpioSetup();
+	serialSetup();
 	
 	//Init display
 	ili9325Init();
