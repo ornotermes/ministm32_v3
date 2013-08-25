@@ -23,7 +23,6 @@
 #include "ads7843.h"
 
 //#include "back.h"
-#include "target.h"
 
 
 //--- Set some clocks. ---//
@@ -80,22 +79,19 @@ int main(void)
 	//ili9325printf("Display: ili%04i\n", _ili9325Model;
 	
 	//Init touch
-	ads7843_setup();
+	ads7843Setup();
 	//ili9325PrintString("Touch screen initialized.\n");
+	ads7843Calibrate();
 	
-		 
-	ili9325Mask(&target_width, &target_height, &target_data[0], 160-16, 120-16);
 	/*ili9325printf("\nPrintf-test:\nc: %c\ni: %i\nu: %u\nx: %x\nX: %X\no: %o\ns: %s\n+08i: %+08i\n_9u: %_9u\n04x; %04x\ni: %i",\
 		 'x', 0-1234, 56789, 0x17af, 0xF3ED, 1597, ";D", 12, 64, 0xf3, 0);*/
 	
 	while(1)
 	{
-		if (!ads7843PEN()) {
-			unsigned long x=ads7843_getPos(0)/8;
-			unsigned long y=ads7843_getPos(1)/8;
-			ili9325SetLocation(0,0);
-			ili9325printf("Touch: 0x%03x, 0x%03x.\n", x, y);
-			ili9325GoTo(320-x*320/0x1000, y*240/0x1000);
+		ads7843Task();
+		if(ads7843Press)
+		{
+			ili9325GoTo(ads7843X, ads7843Y);
 			ili9325Point(_ili9325ColorFront);
 		}
 	}

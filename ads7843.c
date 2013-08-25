@@ -19,7 +19,7 @@
 #define ADS7843_C
 
 //Setup hardware
-void ads7843_setup(void)
+void ads7843Setup(void)
 {
 	//Enable clocks
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_SPI1EN); //SPI
@@ -51,9 +51,11 @@ void ads7843_setup(void)
 	exti_reset_request(EXTI13);
 	exti_enable_request(EXTI13);
 	
+	/*TODO check for cal data*/
+	
 }
 
-uint16_t ads7843_getPos(bool y)
+uint16_t ads7843GetPos(bool y)
 {
 
 	uint16_t data = 0;
@@ -67,6 +69,74 @@ uint16_t ads7843_getPos(bool y)
 	
 	return data;
 
+}
+
+void ads7843Task(void)
+{
+	ads7843Press = !ads7843PEN();
+	if (ads7843Press) {
+		_ads7843RawX = ads7843GetPos(0);
+		_ads7843RawY = ads7843GetPos(1);
+		/*TODO calculate adjusted X/Y*/
+		ads7843X = 320 - (_ads7843RawX - _ads7843CalOffsetX) / _ads7843CalScaleX;
+		ads7843Y = (_ads7843RawY - _ads7843CalOffsetY) / _ads7843CalScaleY;
+	}
+}
+
+void ads7843Calibrate(void)
+{
+	unsigned int calVal[3][2];
+	unsigned char calNum = 0;
+	while(!ads7843Calibrated)
+	{
+		ili9325SetLocation(70,10);
+		ili9325PrintString("Press targets to calibrate.");
+		switch(calNum)
+		{
+		case 0:
+			ili9325Mask(&target_width, &target_height, &target_data, 80-16, 120-16);
+			break;
+		case 1:
+			ili9325Mask(&target_width, &target_height, &target_data, 240-16, 60-16);
+			break;
+		case 2:
+			ili9325Mask(&target_width, &target_height, &target_data, 160-16, 180-16);
+			break;
+		default:
+			ili9325Clear();
+			
+			ili9325printf("Raw cal data:\n0: (%i, %i)\n1: (%i, %i)\n2: (%i, %i)\n", calVal[0][0], calVal[0][1], calVal[1][0], calVal[1][1], calVal[2][0], calVal[2][1]);
+			
+			_ads7843CalScaleX = ((calVal[0][0] - calVal[1][0])*2)/320;
+			_ads7843CalScaleY = ((calVal[2][1] - calVal[1][1])*2)/240;
+			_ads7843CalOffsetX = calVal[1][0] - (calVal[2][0] - calVal[1][0]);
+			_ads7843CalOffsetY = calVal[1][1] - (calVal[0][1] - calVal[1][1]);
+			
+			ili9325printf("Calculated calibration:\nScale X: %i\nScale Y: %i\nOffset X: %i\nOffset Y: %i\n", _ads7843CalScaleX, _ads7843CalScaleY, _ads7843CalOffsetX, _ads7843CalOffsetY);
+			
+			/*TODO: save cal data*/
+			
+			ads7843Calibrated = 1;
+			
+			ili9325PrintString("Press the screen to continue.");
+			ads7843Wait();
+			ili9325Clear();
+			return;
+		}
+		ads7843WaitPress();
+		calVal[calNum][0] = _ads7843RawX;
+		calVal[calNum][1] = _ads7843RawY;
+		ads7843WaitRelease();
+		ili9325Clear();
+		calNum++;
+	}
+}
+
+//Wait for touchscreen to be pressed, then released
+void ads7843Wait(void)
+{
+	ads7843WaitPress();
+	ads7843WaitRelease();
 }
 
 void exti15_10_isr(void)

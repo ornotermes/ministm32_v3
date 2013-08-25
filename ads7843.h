@@ -24,10 +24,32 @@
 #include <libopencm3/stm32/exti.h>
 #include <libopencm3/stm32/spi.h>
 
+#include "target.h" //Target symbol for calibration
+
 #define ads7843CS(x)		(x)?gpio_set(GPIOA, GPIO4):gpio_clear(GPIOA, GPIO4)
 #define ads7843PEN()		gpio_get(GPIOC, BIT13)
 
-void ads7843_setup(void);
+#define ads7843WaitPress()		while(!ads7843Press) ads7843Task() //Wait for the touch screen to be pressed.
+#define ads7843WaitRelease()	while(ads7843Press) ads7843Task() //Wait for the touch screen to be released.
+
+unsigned int ads7843X = 0;
+unsigned int ads7843Y = 0;
+unsigned int _ads7843RawX = 0;
+unsigned int _ads7843RawY = 0;
+bool ads7843Press = 0;
+bool ads7843Calibrated = 0;
+
+uint16_t _ads7843CalScaleX = 0;
+uint16_t _ads7843CalScaleY = 0;
+uint16_t _ads7843CalOffsetX = 0;
+uint16_t _ads7843CalOffsetY = 0;
+
+
+void ads7843Setup(void);
+uint16_t ads7843GetPos(bool y);
+void ads7843Task(void);
+void ads7843Calibrate(void);
+void ads7843Wait(void);
 
 #include "ads7843.c"
 
