@@ -397,7 +397,7 @@ void ili9325printf( char * fmt, ... )
 	char formatSign = 0; //Always sign (+/-)
 	char formatReset = 0; //Reset all settings when we are done with a format
 	char formatOutput[13]; //Temporary output buffer
-	char i = 0; //For flipping formatOutput
+	unsigned char i = 0; //For flipping formatOutput
 	int formatPadding = 0; //How many charecters the format should use
 	
 	int formatInt = 0;
@@ -437,13 +437,13 @@ void ili9325printf( char * fmt, ... )
 				i = 0;
 				if( formatInt == 0 )
 				{
-					formatOutput[i] = (char)('0'); //If number is zero show that, the function for other numbers won't do it
+					formatOutput[i] = '0'; //If number is zero show that, the function for other numbers won't do it
 					i++;
 				}
 				for(; formatInt; i++) //Convert the number, when formatInt == 0 there is nothing more to convert
 				{
 					char mod = formatInt % 10; //Extract least significant base 10 digit
-					formatOutput[i] = (char)('0'+mod); //Add the numerical value of '0' to make a character
+					formatOutput[i] = ('0'+mod); //Add the numerical value of '0' to make a character
 					formatInt = (formatInt - mod) / 10; //Divide by 10 to create a new least significant digit
 				}
 				for(int j = 0; j < (formatPadding - i - formatSign); j++) //calculate about of padding needed.
@@ -459,13 +459,13 @@ void ili9325printf( char * fmt, ... )
 				i = 0;
 				if( formatUnsigned == 0 )
 				{
-					formatOutput[i] = (char)('0');
+					formatOutput[i] = ('0');
 					i++;
 				}
 				for(; formatUnsigned; i++)
 				{
 					char mod = formatUnsigned % 10;
-					formatOutput[i] = (char)('0'+mod);
+					formatOutput[i] = ('0'+mod);
 					formatUnsigned = (formatUnsigned - mod) / 10;
 				}
 				for(int j = 0; j < (formatPadding - i); j++) 
@@ -481,14 +481,14 @@ void ili9325printf( char * fmt, ... )
 				i = 0;
 				if( formatUnsigned == 0 )
 				{
-					formatOutput[i] = (char)('0');
+					formatOutput[i] = ('0');
 					i++;
 				}
 				for(; formatUnsigned; i++)
 				{
 					char mod = formatUnsigned % 16;
 					if (mod > 9) formatOutput[i] = (char)('a'+mod-10);
-					else formatOutput[i] = (char)('0'+mod);
+					else formatOutput[i] = ('0'+mod);
 					formatUnsigned = (formatUnsigned - mod) / 16;
 				}
 				for(int j = 0; j < (formatPadding - i); j++) 
@@ -504,14 +504,14 @@ void ili9325printf( char * fmt, ... )
 				i = 0;
 				if( formatUnsigned == 0 )
 				{
-					formatOutput[i] = (char)('0');
+					formatOutput[i] = ('0');
 					i++;
 				}
 				for(i = 0; formatUnsigned; i++)
 				{
 					char mod = formatUnsigned % 16;
 					if (mod > 9) formatOutput[i] = (char)('A'+mod-10);
-					else formatOutput[i] = (char)('0'+mod);
+					else formatOutput[i] = ('0'+mod);
 					formatUnsigned = (formatUnsigned - mod) / 16;
 				}
 				for(int j = 0; j < (formatPadding - i); j++) 
@@ -527,13 +527,13 @@ void ili9325printf( char * fmt, ... )
 				i = 0;
 				if( formatUnsigned == 0 )
 				{
-					formatOutput[i] = (char)('0');
+					formatOutput[i] = ('0');
 					i++;
 				}
 				for(i = 0; formatUnsigned; i++)
 				{
 					char mod = formatUnsigned % 8;
-					formatOutput[i] = (char)('0'+mod);
+					formatOutput[i] = ('0'+mod);
 					formatUnsigned = (formatUnsigned - mod) / 8;
 				}
 				for(int j = 0; j < (formatPadding - i); j++) 
