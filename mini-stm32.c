@@ -63,17 +63,6 @@ void serial_setup(void)
 
 }
 
-void printhex(unsigned int i) {
-	ili9325PrintString("0x");
-	for(unsigned int digit=0x1000;digit!=0;digit/=16) {
-		unsigned char c=((i/digit)%16);
-		if(c<10)
-			ili9325PrintChar('0'+c);
-		else
-			ili9325PrintChar('a'+c-10);
-	}
-}
-
 int main(void)
 {
 	clock_setup();
