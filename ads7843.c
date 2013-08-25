@@ -71,7 +71,6 @@ uint16_t ads7843_getPos(bool y)
 
 void exti15_10_isr(void)
 {
-	gpio_toggle(GPIOA, BIT2); //TODO
 	exti_reset_request(EXTI13);
 }
 

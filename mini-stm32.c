@@ -40,7 +40,6 @@ void gpio_setup(void)
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPCEN);
 	
 	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_2_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, BIT2 | BIT3); //LEDs
-	gpio_toggle(GPIOA, BIT2);
 	
 }
 
@@ -80,6 +79,7 @@ int main(void)
 	gpio_setup();
 	serial_setup();
 	
+	//Init display
 	ili9325Init();
 	ili9325Orientation(1);
 	ili9325ColorSet(C16_WHITE,C16_BLUE,C16_BLACK);
@@ -87,39 +87,24 @@ int main(void)
 	ili9325BackMode(BACK_IMAGE);
 	ili9325Clear();
 	ili9325Light(1);
+	//ili9325printf("Display: ili%04i\n", _ili9325Model;
 	
-	//Display model
-	char s[] = "Display: ilixxxx\n";
-	for(char i=0; i<4; i++)
-	{
-		char n = ( _ili9325Model >> (i*4) ) & 0xf;
-		if (n > 9) n+='a'-10;
-		else n+='0';
-		s[15-i] = n;
-	}
-	ili9325PrintString(s);
-	
+	//Init touch
 	ads7843_setup();
-	ili9325PrintString("Touch screen initialized.\n");
+	//ili9325PrintString("Touch screen initialized.\n");
 	
-	ili9325printf("Printf-test:\nc: %c\ni: %i\nu: %u\nx: %x\nX: %X\no: %o\ns: %s\n+08i: %+08i\n_9u: %_9u\n04x; %04x\ni: %i",\
+	//ili9325printf("\nPrintf-test:\nc: %c\ni: %i\nu: %u\nx: %x\nX: %X\no: %o\ns: %s\n+08i: %+08i\n_9u: %_9u\n04x; %04x\ni: %i",\
 		 'x', 0-1234, 56789, 0x17af, 0xF3ED, 1597, ";D", 12, 64, 0xf3, 0);
 	
 	while(1)
 	{
-		unsigned long x=ads7843_getPos(0)/8;
-		unsigned long y=ads7843_getPos(1)/8;
-		ili9325SetLocation(30,215);
-		ili9325PrintString("Touch event: ");
-		printhex(x);
-		ili9325PrintString(", ");
-		printhex(y);
-		if (ads7843PEN()) ili9325PrintString(" release.\n");
-		else              ili9325PrintString(" press.  \n");
-		
 		if (!ads7843PEN()) {
+			unsigned long x=ads7843_getPos(0)/8;
+			unsigned long y=ads7843_getPos(1)/8;
+			ili9325SetLocation(0,0);
+			ili9325printf("Touch: 0x%03x, 0x%03x.\n", x, y);
 			ili9325GoTo(320-x*320/0x1000, y*240/0x1000);
-			ili9325Point(C16_WHITE);
+			ili9325Point(_ili9325ColorFront);
 		}
 	}
 
