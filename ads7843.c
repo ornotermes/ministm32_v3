@@ -87,6 +87,7 @@ void ads7843Calibrate(void)
 {
 	unsigned int calVal[3][2];
 	unsigned char calNum = 0;
+	ili9325Clear();
 	while(!ads7843Calibrated)
 	{
 		ili9325SetLocation(70,10);
