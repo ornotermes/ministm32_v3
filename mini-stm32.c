@@ -21,6 +21,7 @@
 
 #include "ili9325.h"
 #include "ads7843.h"
+#include "mini-stm32.h"
 
 //#include "back.h"
 
@@ -40,6 +41,8 @@ void gpioSetup(void)
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPCEN);
 	
 	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_2_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, BIT2 | BIT3); //LEDs
+	gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, BIT0 | BIT1); //Buttons
+	gpio_set(GPIOA, BIT0 | BIT1); //pull up
 	
 }
 
@@ -62,6 +65,17 @@ void serialSetup(void)
 
 }
 
+void buttonTask(void)
+{
+	button1 = !gpio_get(GPIOA, BIT0);
+	if(button1) button1Count++;
+	else button1Count = 0;
+	
+	button2 = !gpio_get(GPIOA, BIT1);
+	if(button2) button2Count++;
+	else button2Count = 0;
+}
+
 int main(void)
 {
 	clockSetup();
@@ -81,13 +95,15 @@ int main(void)
 	//Init touch
 	ads7843Setup();
 	//ili9325PrintString("Touch screen initialized.\n");
-	ads7843Calibrate();
+	ili9325PrintString("Press KEY1 ~3 seconds to calibrate.\n");
 	
 	/*ili9325printf("\nPrintf-test:\nc: %c\ni: %i\nu: %u\nx: %x\nX: %X\no: %o\ns: %s\n+08i: %+08i\n_9u: %_9u\n04x; %04x\ni: %i",\
 		 'x', 0-1234, 56789, 0x17af, 0xF3ED, 1597, ";D", 12, 64, 0xf3, 0);*/
 	
 	while(1)
 	{
+		buttonTask();
+		if(button1Count == 1000000) ads7843Calibrate();
 		ads7843Task();
 		if(ads7843Press)
 		{
