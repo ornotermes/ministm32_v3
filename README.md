@@ -1,3 +1,31 @@
+# Install a toolchain (Ubuntu): #
+
+If there is a more recent version available, try that first.
+First install some packages needed to install and run the toolchain (the last two that ens with :i386 is only needed on 64bit OS).
+
+$ sudo apt-get install git openocd libncurses5:i386 libc6:i386
+
+Go to https://launchpad.net/gcc-arm-embedded/+download and download  gcc-arm-none-eabi-4_8-2013q4-20131204-linux.tar.bz2
+
+$cd Downloads
+...or where ever the file is stored.
+
+$ tar -xjf gcc-arm-none-eabi-4_8-2013q4-20131204-linux.tar.bz2 -C $HOME/
+
+$ cd $HOME
+
+$ mv gcc-arm-none-eabi-4_8-2013q4/ gcc-arm-none-eabi/
+
+$ echo -e "\nPATH=\$HOME/gcc-arm-none-eabi/bin:\$PATH\nexport PATH" >> .bashrc
+
+$ bash
+
+$ git clone git://github.com/libopencm3/libopencm3.git
+$ cd libopencm3
+$ make
+$ DESTDIR=$HOME/gcc-arm-none-eabi make install
+
+
 # License #
 Different files have different licenses, see each file for more info.
 Some of the licenses are:
