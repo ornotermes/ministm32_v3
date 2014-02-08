@@ -68,7 +68,7 @@ debug: $(BINARY).debug
 
 %.images: %.bin %.hex %.srec %.list
 	@#echo "*** $* images generated ***"
-	$(Q)$(SIZE) $(BINARY).hex
+	$(Q)$(SIZE) $(BINARY).elf
 
 %.bin: %.elf
 	@#printf "  OBJCOPY $(*).bin\n"
