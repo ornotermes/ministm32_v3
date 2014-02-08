@@ -21,6 +21,7 @@
 #include <libopencm3/stm32/f1/rcc.h>
 #include <libopencm3/stm32/f1/gpio.h>
 #include <libopencm3/stm32/f1/nvic.h>
+#include <libopencm3/stm32/f1/bkp.h>
 #include <libopencm3/stm32/exti.h>
 #include <libopencm3/stm32/spi.h>
 
@@ -31,6 +32,11 @@
 
 #define ads7843WaitPress()		while(!ads7843Press) ads7843Task() //Wait for the touch screen to be pressed.
 #define ads7843WaitRelease()	while(ads7843Press) ads7843Task() //Wait for the touch screen to be released.
+
+#define _ads7843RegCalScaleX	BKP_DR10
+#define _ads7843RegCalScaleY	BKP_DR9
+#define _ads7843RegCalOffsetX	BKP_DR8
+#define _ads7843RegCalOffsetY	BKP_DR7
 
 unsigned int ads7843X = 0;
 unsigned int ads7843Y = 0;
@@ -50,6 +56,8 @@ uint16_t ads7843GetPos(bool y);
 void ads7843Task(void);
 void ads7843Calibrate(void);
 void ads7843Wait(void);
+void ads7843CalWrite(void);
+bool ads7843CalRead(void);
 
 #include "ads7843.c"
 

@@ -51,6 +51,8 @@ void ads7843Setup(void)
 	exti_reset_request(EXTI13);
 	exti_enable_request(EXTI13);
 	
+	ads7843CalRead();
+	
 	/*TODO check for cal data*/
 	
 }
@@ -120,7 +122,10 @@ void ads7843Calibrate(void)
 			
 			ads7843Calibrated = 1;
 			
-			ili9325PrintString("Press the screen to continue.");
+			ads7843CalWrite();
+			ili9325PrintString("Calibration data stored.\n");
+			
+			ili9325PrintString("Tap the screen to continue.\n");
 			ads7843Wait();
 			ili9325Clear();
 			return;
@@ -140,6 +145,28 @@ void ads7843Wait(void)
 	ads7843WaitPress();
 	ads7843WaitRelease();
 }
+
+void ads7843CalWrite(void)
+{
+	_ads7843RegCalScaleX = _ads7843CalScaleX;
+	_ads7843RegCalScaleY = _ads7843CalScaleY;
+	_ads7843RegCalOffsetX = _ads7843CalOffsetX;
+	_ads7843RegCalOffsetY = _ads7843CalOffsetY;
+}
+
+bool ads7843CalRead(void)
+{
+	if(_ads7843RegCalScaleX!=0 || _ads7843RegCalScaleY!=0 || _ads7843RegCalOffsetX!=0 || _ads7843RegCalOffsetY!=0)
+	{
+		_ads7843CalScaleX = _ads7843RegCalScaleX;
+		_ads7843CalScaleY = _ads7843RegCalScaleY;
+		_ads7843CalOffsetX = _ads7843RegCalOffsetX;
+		_ads7843CalOffsetY = _ads7843RegCalOffsetY;
+		ads7843Calibrated = 1;
+	}
+	return ads7843Calibrated;
+}
+
 
 void exti15_10_isr(void)
 {
