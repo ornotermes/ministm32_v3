@@ -22,48 +22,39 @@
 PREFIX	?= arm-none-eabi
 CC		= $(PREFIX)-gcc
 LD		= $(PREFIX)-gcc
-OBJCOPY	= $(PREFIX)-objcopy
-OBJDUMP	= $(PREFIX)-objdump
-GDB		= $(PREFIX)-gdb
-SIZE	= $(PREFIX)-size
+OBJCOPY		= $(PREFIX)-objcopy
+OBJDUMP		= $(PREFIX)-objdump
+GDB		= $(PREFIX)-gdb --tui
+SIZE		= $(PREFIX)-size
 
-TOOLCHAIN_DIR ?= ../../../../..
-ifeq ($(wildcard ../../../../../lib/libopencm3_stm32f1.a),)
-ifneq ($(strip $(shell which $(CC))),)
-TOOLCHAIN_DIR := $(shell dirname `which $(CC)`)/../$(PREFIX)
-endif
-else
-ifeq ($(V),1)
-$(info We seem to be building the example in the source directory. Using local library!)
-endif
-endif
+TOOLCHAIN_DIR	= $(USER)/gcc-arm-none-eabi/gcc-arm-none-eabi
+INCLUDE_DIR	= $(TOOLCHAIN_DIR)/include
+LIB_DIR		= $(TOOLCHAIN_DIR)/lib
+BIN_DIR		= $(TOOLCHAIN_DIR)/bin
 
 ARCH_FLAGS      = -mthumb -mcpu=cortex-m3 -msoft-float
-CFLAGS		+= -g -Wall -Wextra -I$(TOOLCHAIN_DIR)/include \
+CFLAGS		+= -Os -g \
+		   -Wall -Wextra -Wimplicit-function-declaration \
+		   -Wredundant-decls -Wmissing-prototypes -Wstrict-prototypes \
+		   -Wundef -Wshadow \
+		   -I$(INCLUDE_DIR) \
 		   -fno-common $(ARCH_FLAGS) -MD -DSTM32F1
 LDSCRIPT	?= $(BINARY).ld
-LDFLAGS		+= --static -Wl,--start-group -lc -lgcc -lnosys -Wl,--end-group \
-		   -L$(TOOLCHAIN_DIR)/lib \
+LDFLAGS		+= --static -Wl,--start-group -lc -lm -lgcc -Wl,--end-group \
+		   -L$(LIB_DIR) \
 		   -T$(LDSCRIPT) -nostartfiles -Wl,--gc-sections \
 		   $(ARCH_FLAGS) -mfix-cortex-m3-ldrd
 
-ifneq ($(OPENCM3_DIR),)
-CFLAGS          += -I$(OPENCM3_DIR)/include
-LDFLAGS         += -L$(OPENCM3_DIR)/lib -L$(OPENCM3_DIR)/lib/stm32/f1
-SCRIPT_DIR      = $(OPENCM3_DIR)/share
-else
-SCRIPT_DIR      = $(shell dirname $(shell readlink -f $(shell which $(PREFIX)-gcc)))/../$(PREFIX)/share
-endif
 
 OBJS		+= $(BINARY).o
 
 # Be silent per default, but 'make V=1' will show all compiler calls.
-ifneq ($(V),1)
-Q := @
-NULL := 2>/dev/null
-else
+ ifneq ($(V),1)
+ Q := @
+ NULL := 2>/dev/null
+ else
 LDFLAGS += -Wl,--print-gc-sections
-endif
+ endif
 
 .SUFFIXES: .elf .bin .hex .srec .list .images
 .SECONDEXPANSION:
@@ -95,7 +86,7 @@ debug: $(BINARY).debug
 	@#printf "  OBJDUMP $(*).list\n"
 	$(Q)$(OBJDUMP) -S $(*).elf > $(*).list
 
-%.elf: $(OBJS) $(LDSCRIPT) $(TOOLCHAIN_DIR)/lib/libopencm3_stm32f1.a
+%.elf: $(OBJS) $(LDSCRIPT)
 	@#printf "  LD      $(subst $(shell pwd)/,,$(@))\n"
 	$(Q)$(LD) -o $(*).elf $(OBJS) -lopencm3_stm32f1 $(LDFLAGS)
 
@@ -116,8 +107,6 @@ clean:
 	@echo "  GDB   $(*).elf (flash)"
 	$(Q)$(GDB) --batch \
 		-ex "target remote :3333" \
-		-ex "set remote hardware-breakpoint-limit 6" \
-		-ex "set remote hardware-watchpoint-limit 4" \
 		-ex "monitor reset halt" \
 		-ex "load" \
 		-ex "monitor reset" \
@@ -126,9 +115,13 @@ clean:
 %.debug: %.images
 	@echo "  GDB   $(*).elf (debug)"
 	$(Q)$(GDB) \
-		-ex "target remote :3333" \
+		-ex "set height 0" \
+		-ex "set history save on" \
+		-ex "set history filename ~/.gdb-history-arm" \
+		-ex "set history size 1000" \
 		-ex "set remote hardware-breakpoint-limit 6" \
 		-ex "set remote hardware-watchpoint-limit 4" \
+		-ex "target remote :3333" \
 		-ex "monitor reset halt" \
 		-ex "load" \
 		-ex "monitor reset" \
