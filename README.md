@@ -25,6 +25,17 @@ $ cd libopencm3
 $ make
 $ DESTDIR=$HOME/gcc-arm-none-eabi make install
 
+# Build, upload and debug #
+
+The basic make commands should work rather normal. To just generate firmware images:  
+$ make
+
+There are some special stuff that depends on GDB and openocd:  
+$ make flash - Compile and upload .hex file.  
+$ make debug - Debug using GDB in text user interface.
+
+I included a config for openocd that works with this board and j-link JTAG interface and has GDB server enabled. Use this command:  
+$ openocd -f openocd-jlink.cfg
 
 # License #
 Different files have different licenses, see each file for more info.
