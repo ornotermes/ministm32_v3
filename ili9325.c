@@ -160,19 +160,27 @@ void ili9325Orientation(uint8_t rot)
 			_ili9325Rotation = 0;
 			incV = 1;
 			incH = 1;
+			_ili9325ResX = ili9325Width;
+			_ili9325ResY = ili9325Height;
 			break;
 		case 1: //90 deg
 			_ili9325Rotation = 1;
 			scanV = 1;
 			incV = 1;
+			_ili9325ResX = ili9325Height;
+			_ili9325ResY = ili9325Width;
 			break;
 		case 2: //180 deg
 			_ili9325Rotation = 2;
+			_ili9325ResX = ili9325Width;
+			_ili9325ResY = ili9325Height;
 			break;
 		case 3: //270 deg
 			_ili9325Rotation = 3;
 			scanV = 1;
 			incH = 1;
+			_ili9325ResX = ili9325Height;
+			_ili9325ResY = ili9325Width;
 			break;
 		default:
 			__asm__("nop");

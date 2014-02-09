@@ -99,6 +99,10 @@ const uint16_t *_ili9325BackHeight;
 const uint16_t *_ili9325BackColors;
 const uint8_t *_ili9325BackData;
 
+//Logical resolution
+uint16_t _ili9325ResX = 0;
+uint16_t _ili9325ResY = 0;
+
 //---- Function prototypes ---------------------------------------------------//
 
 void		ili9325PortDirection(bool input);		
