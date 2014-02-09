@@ -200,16 +200,16 @@ void ili9325GoTo(uint16_t x, uint16_t y)
 			ty = y;
 			break;
 		case 1:
-			tx = ili9325Width - y;
+			tx = ili9325Width-1 - y;
 			ty = x;
 			break;
 		case 2:
-			tx = ili9325Width - x;
-			ty = ili9325Height - y;
+			tx = ili9325Width-1 - x;
+			ty = ili9325Height-1 - y;
 			break;
 		case 3:
 			tx = y;
-			ty = ili9325Height - x;
+			ty = ili9325Height-1 - x;
 			break;
 	}
 	ili9325WriteRegister(0x0020,tx); //Native X pos
@@ -408,7 +408,7 @@ void ili9325Clear(void)
 	
 	for	(uint16_t y = 0; y < ili9325Width; y++)
 	{
-		ili9325GoTo(0, 1+y);
+		ili9325GoTo(0, y);
 		ili9325CS(0);
 		ili9325WriteCommand(0x0022);
 		for (uint16_t x = 0; x < ili9325Height; x++)
