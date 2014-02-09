@@ -289,12 +289,12 @@ void ili9325PrintChar(char character)
 	case '\n':
 	case 13: //CR
 		_ili9325LocationY += (*_ili9325FontHeight);
-		if (_ili9325LocationY>((*_ili9325BackHeight)-(*_ili9325FontHeight))) _ili9325LocationY=0;
 		_ili9325LocationX = _ili9325TextXOffset;
 		break;
 		
 	default:
 		character -= 32;
+		if ( (_ili9325LocationY + (*_ili9325FontHeight)) > (_ili9325ResY) ) _ili9325LocationY = 0;
 		for	(uint16_t y = 0; y < (*_ili9325FontHeight); y++)
 		{
 			ili9325GoTo(_ili9325LocationX, _ili9325LocationY+y);
