@@ -106,7 +106,7 @@ uint16_t	ili9325PortRead(void);
 void		ili9325WriteCommand(uint16_t command);
 void		ili9325WriteRegister(uint16_t reg, uint16_t data);
 uint16_t	ili9325ReadReg(uint16_t reg);
-uint16_t	ili9325ReadData();
+uint16_t	ili9325ReadData(void);
 void		ili9325Init(void);
 void		ili9325GoTo(uint16_t x, uint16_t y);
 void		ili9325Point(uint16_t color);
