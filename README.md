@@ -36,6 +36,6 @@ Some of the licenses are:
 * CC BY-SA 3.0, Creative Commons Attribution - Share Alike 3.0 Unported: http://creativecommons.org/licenses/by-sa/3.0/legalcode
 
 ## Files ##
-rainbow.png: (c)2012 Rikard Lindström CC BY-SA 3.0
-back.png: (c)2013 Rikard Lindström CC BY-SA 3.0
-target.png: (c)2013 Rikard Lindström CC BY-SA 3.0
+rainbow.png: (c)2012 Rikard Lindström CC BY-SA 3.0  
+back.png: (c)2013 Rikard Lindström CC BY-SA 3.0  
+target.png: (c)2013 Rikard Lindström CC BY-SA 3.0  
