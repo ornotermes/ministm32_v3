@@ -129,6 +129,7 @@ void		ili9325Clear(void);
 void		ili9325ClearArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 void		ili9325ClearLine(void);
 void		ili9325printf( char * fmt, ... );
+void 		ili9325Rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, bool fill, uint16_t fillColor, uint16_t edgeColor, uint16_t edgeWidth);
 
 //---- Include source --------------------------------------------------------//
 

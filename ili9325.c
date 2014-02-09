@@ -666,4 +666,19 @@ void ili9325printf( char * fmt, ... )
 	va_end(args);
 }
 
+void ili9325Rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, bool fill, uint16_t fillColor, uint16_t edgeColor, uint16_t edgeWidth)
+{
+	for(uint16_t _y = y; _y <= y+height; _y++)
+	{
+		ili9325GoTo(x,_y);
+		for(uint16_t _x = x; _x <= x+width; _x++)
+		{
+			if ( (_x < x+edgeWidth) || (_x > x+width-edgeWidth) || (_y < y+edgeWidth) || (_y > y+height-edgeWidth) )
+				ili9325Point(edgeColor);
+			else if (fill)
+				ili9325Point(fillColor);
+		}
+	}
+}
+
 #endif
