@@ -15,22 +15,44 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//---- Includes headers ------------------------------------------------------//
+
 #include <libopencm3/stm32/f1/rcc.h>
 #include <libopencm3/stm32/f1/gpio.h>
 #include <libopencm3/stm32/usart.h>
+#include <stdlib.h>
 
 #include "ili9325.h"
 #include "ads7843.h"
-#include "mini-stm32.h"
-
+#include "syscall.c"
+#include "clock.h"
 //#include "back.h"
 
+//---- Variables -------------------------------------------------------------//
+
+bool button1 = 0;
+bool button2 = 0;
+unsigned int button1Count = 0;
+unsigned int button2Count = 0;
+
+//---- Function prototypes ---------------------------------------------------//
+
+void clockSetup(void);
+void gpioSetup(void);
+void serialSetup(void);
+void buttonTask(void);
+int main(void);
+
+//---- Source ----------------------------------------------------------------//
 
 //--- Set some clocks. ---//
 void clockSetup(void)
 {
 	// Select main clock //
 	rcc_clock_setup_in_hse_8mhz_out_72mhz();
+
+	//Make sure RTC is running
+	rtc_auto_awake(LSE, 0x7fff);
 }
 
 void gpioSetup(void)
@@ -94,16 +116,20 @@ int main(void)
 	
 	//Init touch
 	ads7843Setup();
-	//ili9325PrintString("Touch screen initialized.\n");
-	ili9325PrintString("Press KEY1 ~3 seconds to calibrate.\n");
+	ili9325PrintString("Press KEY1 to re-calibrate.\n");
+	ili9325PrintString("Press KEY2 to set time.\n");
 	
 	/*ili9325printf("\nPrintf-test:\nc: %c\ni: %i\nu: %u\nx: %x\nX: %X\no: %o\ns: %s\n+08i: %+08i\n_9u: %_9u\n04x; %04x\ni: %i",\
 		 'x', 0-1234, 56789, 0x17af, 0xF3ED, 1597, ";D", 12, 64, 0xf3, 0);*/
 	
 	while(1)
 	{
+		ClockShow();
+				
 		buttonTask();
-		if(button1Count == 1000000) ads7843Calibrate();
+		if(button1Count == 10) ads7843Calibrate();
+		if(button2Count == 10) ClockSet();
+		
 		ads7843Task();
 		if(ads7843Press)
 		{
@@ -111,6 +137,6 @@ int main(void)
 			ili9325Point(_ili9325ColorFront);
 		}
 	}
-
+	
 	return 0;
 }
