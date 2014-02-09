@@ -124,7 +124,7 @@ void ili9325Init(void)
 		ili9325WriteRegister(0x0012,0x009d); //Power Control 3 - VCIREmask0x0080=0x0080(2.5Vref), VRHmask0x000f=0x000d(VREG1OUT=4.625V), PONmask0x0000=0x0010(VGL output enable)
 	
 		//stabilizing time for PSU(rec 80ms+)
-		for (int i = 0; i < 80000; i++) __asm__("nop");
+		for (int i = 0; i < 250000; i++) __asm__("nop");
 	
 		//Set other registers
 		ili9325WriteRegister(0x0060,0x2700); //Gate Scan Control 1 - LVmask0x3f00=0x2700(320 lines)
