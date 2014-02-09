@@ -1,7 +1,7 @@
 # Install a toolchain (Ubuntu): #
 
 If there is a more recent version available, try that first.
-First install some packages needed to install and run the toolchain (the last two that ens with :i386 is only needed on 64bit OS).
+First install some packages needed to install and run the toolchain (the last two that ends with :i386 is only needed on 64bit OS).
 
 $ sudo apt-get install git openocd libncurses5:i386 libc6:i386
 
