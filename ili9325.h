@@ -21,6 +21,7 @@
 //---- Includes headers ------------------------------------------------------//
 
 #include <libopencm3/stm32/f1/gpio.h>
+#include <string.h>
 #include "font_7seg.h"
 #include "font6x12.h"
 #include "font8x16.h"
