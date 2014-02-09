@@ -681,4 +681,39 @@ void ili9325Rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, bool f
 	}
 }
 
+void ili9325ButtonDraw(struct ili9325Button button)
+{
+	ili9325Rect(button.x, button.y, button.width, button.height, true, _ili9325ColorBack, _ili9325ColorFront, 3);
+	uint16_t stringX = button.width/2 - ((strlen(button.text) * (*_ili9325FontWidth))/2);
+	uint16_t stringY = button.height/2 - (*_ili9325FontHeight/2);
+	ili9325SetLocation(button.x + stringX, button.y + stringY);
+	ili9325PrintString(button.text);
+}
+
+bool ili9325ButtonTouch(struct ili9325Button button, uint16_t x, uint16_t y)
+{
+	if( (button.x <= x) && (button.x+button.width >= x) && (button.y <= y) && (button.y+button.height >= y) )
+	{
+		button.callback();
+		return true;
+	}
+	else return false;
+}
+
+void ili9325ButtonLayout(struct ili9325Button buttons[], uint8_t count)
+{
+	for(uint8_t b = 0; b < count; b++)
+	{
+		ili9325ButtonDraw(buttons[b]);
+	}
+}
+
+void ili9325ButtonScan(struct ili9325Button buttons[], uint8_t count, uint16_t x, uint16_t y)
+{
+	for(uint8_t b = 0; b < count; b++)
+	{
+		ili9325ButtonTouch(buttons[b], x, y);
+	}
+}
+
 #endif

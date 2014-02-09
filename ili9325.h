@@ -63,6 +63,20 @@
 //#define ili9325PortWrite(x)	GPIO_BSRR(GPIOC) = (0x00ff & !x)<<16 | (0x00ff & x); GPIO_BSRR(GPIOB) = (0xff00 & !x)<<16 | (0xff00 & x)
 #define ili9325WriteData(x)	ili9325PortWrite(x); ili9325WR(0); ili9325WR(1) //Write data to display
 
+//---- Structs ---------------------------------------------------------------//
+
+struct ili9325Button
+{
+	uint16_t x;
+	uint16_t y;
+	uint16_t width;
+	uint16_t height;
+	
+	char (*text);
+	
+	void (*callback)(void); //Each button need it's own callback function.
+};
+
 //---- Variables -------------------------------------------------------------//
 
 //Store display model, if you want to know exactly what display you have.
@@ -130,6 +144,10 @@ void		ili9325ClearArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 void		ili9325ClearLine(void);
 void		ili9325printf( char * fmt, ... );
 void 		ili9325Rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, bool fill, uint16_t fillColor, uint16_t edgeColor, uint16_t edgeWidth);
+void		ili9325ButtonDraw(struct ili9325Button button);
+bool		ili9325ButtonTouch(struct ili9325Button button, uint16_t x, uint16_t y);
+void		ili9325ButtonLayout(struct ili9325Button buttons[], uint8_t count);
+void		ili9325ButtonScan(struct ili9325Button buttons[], uint8_t count, uint16_t x, uint16_t y);
 
 //---- Include source --------------------------------------------------------//
 
