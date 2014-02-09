@@ -121,6 +121,8 @@ void		ili9325PrintString(char chars[]);
 void		ili9325SetFont(uint8_t font);
 void		ili9325SetLocation(uint16_t x, uint16_t y);
 void		ili9325ColorSet(uint16_t front, uint16_t back, uint16_t fill);
+void		ili9325Image(const uint16_t (*width), const uint16_t (*height), const uint16_t (*colors)[], const uint8_t (*data)[], uint16_t destX, uint16_t destY);
+void		ili9325Mask(const uint16_t (*width), const uint16_t (*height), const uint8_t (*data)[], uint16_t destX, uint16_t destY);
 void		ili9325BackImage(const uint16_t *width, const uint16_t *height, const uint16_t *colors, const uint8_t *data);
 void		ili9325BackMode(uint8_t mode);
 void		ili9325Clear(void);
