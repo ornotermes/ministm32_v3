@@ -126,6 +126,8 @@ void		ili9325Mask(const uint16_t (*width), const uint16_t (*height), const uint8
 void		ili9325BackImage(const uint16_t *width, const uint16_t *height, const uint16_t *colors, const uint8_t *data);
 void		ili9325BackMode(uint8_t mode);
 void		ili9325Clear(void);
+void		ili9325ClearArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
+void		ili9325ClearLine(void);
 void		ili9325printf( char * fmt, ... );
 
 //---- Include source --------------------------------------------------------//

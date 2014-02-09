@@ -433,6 +433,40 @@ void ili9325Clear(void)
 	}
 }
 
+void ili9325ClearArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+{
+	for	(uint16_t y = y1; y < y2; y++)
+	{
+		ili9325GoTo(x1, y);
+		ili9325CS(0);
+		ili9325WriteCommand(0x0022);
+		for (uint16_t x = 0; x < x2; x++)
+		{
+			if ( _ili9325BackMode == BACK_SOLID )
+			{
+				ili9325WriteData( _ili9325ColorBack );
+			}
+			if ( _ili9325BackMode == BACK_IMAGE )
+			{
+				if ( (y < (*_ili9325BackHeight)) & (x < (*_ili9325BackWidth)))
+				{
+					ili9325WriteData(*(_ili9325BackColors + ( *(_ili9325BackData + (*_ili9325BackWidth)*y+x) )));
+				}
+				else
+				{
+					ili9325WriteData( _ili9325ColorBack );
+				}
+			}
+		}
+		ili9325CS(1);
+	}
+}
+
+void ili9325ClearLine(void)
+{
+	ili9325ClearArea(0, _ili9325LocationY, _ili9325ResX -1, _ili9325LocationY + (*_ili9325FontHeight));
+}
+
 void ili9325printf( char * fmt, ... )
 {
 	va_list args;
