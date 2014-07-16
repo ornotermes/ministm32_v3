@@ -20,8 +20,8 @@ $ echo -e "\nPATH=\$HOME/gcc-arm-none-eabi/bin:\$PATH\nexport PATH" >> .bashrc
 
 $ bash
 
-$ git clone git://github.com/libopencm3/libopencm3.git  
-$ cd libopencm3  
+$ git clone https://github.com/ornotermes/ministm32_v3.git --recursive  
+$ cd ministm32_v3/libopencm3  
 $ make  
 $ DESTDIR=$HOME/gcc-arm-none-eabi make install
 
